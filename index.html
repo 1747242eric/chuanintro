@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eric Chuan</title>
+    <meta name="description" content="Eric Chuan — Creative Director. Portfolio of brand, digital, and campaign work for Lacoste, American Express, Morgan Stanley, Bayer, and more.">
+    <meta property="og:title" content="Eric Chuan — Creative Director">
+    <meta property="og:description" content="Portfolio of brand, digital, and campaign work for leading global companies.">
+    <meta property="og:url" content="https://ericchuan.design">
+    
+    <!-- Force light mode -->
+    <meta name="color-scheme" content="light only">
+    <meta name="theme-color" content="#ffffff">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
+    
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #fff;
+            overflow: hidden;
+            cursor: pointer;
+            font-family: sans-serif;
+            color-scheme: light only;
+        }
+        
+        /* PRESS START ANIMATION STYLES - SIMPLIFIED */
+        .press-start-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            z-index: 1000;
+        }
+        
+        .press-start-text {
+            font-size: 15px; /* Fixed size - no scaling */
+            font-weight: 750;
+            color: black;
+            font-family: 'Roboto', sans-serif;
+            white-space: nowrap;
+            letter-spacing: 15em; /* Start with wide spacing */
+            opacity: 0;
+            animation: pressStartAnim 0.8s ease-out forwards; /* SLOWER animation - 3 seconds */
+            animation-delay: 0.1s; /* Start after 0.5s */
+            padding-left: 3em; /* Compensate for extra-wide spacing */
+        }
+        
+        /* SLOWER animation - just letter spacing change */
+        @keyframes pressStartAnim {
+            0% {
+                opacity: 0;
+                letter-spacing: 15em;
+            }
+            20% {
+                opacity: 1;
+                letter-spacing: 14em;
+            }
+            40% {
+                opacity: 1;
+                letter-spacing: 12em;
+            }
+            60% {
+                opacity: 1;
+                letter-spacing: 9em;
+            }
+            80% {
+                opacity: 1;
+                letter-spacing: 5em;
+            }
+            100% {
+                opacity: 1;
+                letter-spacing: 0.8em; /* End spacing */
+            }
+        }
+        
+        /* Mobile adjustments for PRESS START */
+        @media (max-width: 768px) {
+            .press-start-text {
+                font-size: 13px; /* Smaller on mobile */
+                letter-spacing: 10em; /* Start with less spacing on mobile */
+                padding-left: 0.4em;
+            }
+            
+            @keyframes pressStartAnim {
+                0% {
+                    opacity: 0;
+                    letter-spacing: 10em;
+                }
+                20% {
+                    opacity: 1;
+                    letter-spacing: 9em;
+                }
+                40% {
+                    opacity: 1;
+                    letter-spacing: 8.5em;
+                }
+                60% {
+                    opacity: 1;
+                    letter-spacing: 7em;
+                }
+                80% {
+                    opacity: 1;
+                    letter-spacing: 4em;
+                }
+                100% {
+                    opacity: 1;
+                    letter-spacing: 0.7em; /* Tighter on mobile */
+                }
+            }
+        }
+        
+        /* MAIN CONTENT STYLES */
+        /* Add to your CSS (around line 70) */
+.video-container {
+    transition: opacity 1s ease;
+}
+
+.video-container.fade-out {
+    opacity: 0;
+}
+
+.intro-container {
+    opacity: 0;
+    transition: opacity 1s ease 1s; /* Fade in after 1s delay */
+}
+
+.intro-container.fade-in {
+    opacity: 1;
+}
+        .container {
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+        }
+        
+        .video-container {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .intro-video {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            background: #fff;
+            object-fit: cover;
+            object-position: center;
+        }
+        
+        /* Enable scrolling for mobile when intro text shows */
+        .intro-text-visible {
+            overflow-y: auto !important;
+        }
+        
+        /* Intro styles - RESPONSIVE */
+        .intro-container { 
+            position: fixed; 
+            top: 20px; 
+            left: 20px; 
+            right: 20px;
+            z-index: 10001; 
+            width: calc(100% - 40px);
+            display: none;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .intro-text { 
+            font-size: 60px; 
+            font-weight: 600; 
+            line-height: 1.3; 
+            color: #000000; 
+            letter-spacing: -0.02em; 
+            white-space: normal; 
+            overflow: hidden; 
+            margin: 0; 
+            padding: 0; 
+        }
+        /* Add to your CSS */
+.page-fade-out {
+    opacity: 0;
+    transition: opacity 1s ease !important;
+}
+        /* Mobile typography */
+        @media (max-width: 1024px) {
+            .intro-text {
+                font-size: 48px;
+                line-height: 1.25;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .intro-text {
+                font-size: 36px;
+                line-height: 1.2;
+                letter-spacing: -0.01em;
+            }
+            
+            .intro-container {
+                top: 15px;
+                left: 15px;
+                right: 15px;
+                width: calc(100% - 30px);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .intro-text {
+                font-size: 28px;
+                line-height: 1.15;
+            }
+            
+            .intro-container {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                width: calc(100% - 20px);
+            }
+            
+            .text-section {
+                margin-bottom: 20px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .intro-text {
+                font-size: 24px;
+                line-height: 1.1;
+            }
+        }
+        
+        .text-section { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            opacity: 0; 
+            pointer-events: none; 
+            width: 100%; 
+            transition: opacity 2.5s ease; 
+        }
+        
+        .text-section.active { 
+            opacity: 1; 
+            pointer-events: auto; 
+            position: relative; 
+        }
+        
+        .word { 
+            opacity: 0; 
+            display: inline-block; 
+        }
+        
+        .word.revealed { 
+            opacity: 1; 
+            transition: opacity 0.8s ease; 
+        }
+        
+        .text-section { 
+            margin-bottom: 30px; 
+        }
+        
+        #section3 { 
+            margin-bottom: 0; 
+        }
+        
+        
+    </style>
+</head>
+<body>
+    <!-- Single PRESS START Animation -->
+    <div class="press-start-container">
+        <div class="press-start-text">PRESS START</div>
+    </div>
+    
+    <!-- Main content (hidden initially) -->
+    <div class="container">
+        <div class="video-container">
+            <video class="intro-video" playsinline>
+                <source src="assets/Eric-Chuan-hello.mp4" type="video/mp4">
+            </video>
+        </div>
+        <div class="intro-container">
+            <div class="intro-text">
+                <div class="text-section active" id="section1">
+                    <span id="sentence1">
+                        <span class="word">Make</span>
+                        <span class="word">powerful</span>
+                        <span class="word">first</span>
+                        <span class="word">impressions</span>
+                        <span class="word">that</span>
+                        <span class="word">last.</span>
+                    </span>
+                </div>
+                <div class="text-section" id="section2">
+                    Look good on paper, in the social sphere, and at events, especially annual general meetings.
+                </div>
+                <div class="text-section" id="section3">
+                    Two decades of corporate, agency, and independent experience growing brands of every scale—from Fortune 500 to mom-and-pop stores across finance, fashion, retail, healthcare + more.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+  
+
+    <script>
+        // Variables
+        let started = false;
+        let autoStartTimer;
+        
+        // Function to start the experience immediately
+        function startExperience() {
+            if (started) return;
+            started = true;
+            
+            // Clear any pending auto-start timer
+            clearTimeout(autoStartTimer);
+            
+            // Hide PRESS START animation immediately
+            document.querySelector('.press-start-container').style.display = 'none';
+            
+            // Show main container
+            document.querySelector('.container').style.display = 'flex';
+            document.querySelector('.video-container').style.display = 'flex';
+            document.querySelector('.intro-video').style.display = 'block';
+            
+            // Play video immediately
+            const video = document.querySelector('.intro-video');
+            video.volume = 0.3;
+            video.play().catch(e => {
+                console.log('Autoplay blocked, muting and retrying');
+                video.muted = true;
+                video.play();
+            });
+            
+            video.addEventListener('ended', () => {
+    setTimeout(() => {
+        // 1. Fade out video container
+        document.querySelector('.video-container').classList.add('fade-out');
+        
+        // 2. After 1s fade completes, hide video and show intro
+        setTimeout(() => {
+            document.querySelector('.video-container').style.display = 'none';
+            document.querySelector('.intro-container').style.display = 'block';
+            
+            // 3. Fade in intro text
+            document.querySelector('.intro-container').classList.add('fade-in');
+            
+            startIntroAnimation();
+        }, 700); // Wait for video fade to complete
+    }, 0); // Initial 500ms delay after video ends
+});
+        }
+        
+        // Click anywhere to start immediately
+        document.addEventListener('click', startExperience);
+        
+        // Also allow tapping on mobile
+        document.addEventListener('touchstart', startExperience);
+        
+        // Start after 0.5 seconds and play sound
+        setTimeout(() => {
+            // Animation starts automatically via CSS animation-delay
+            
+            // Play countdown sound
+            try {
+                const audio = new Audio('assets/Eric-Chuan-Countdown.mp3');
+                audio.volume = 0.3;  // <-- ADD THIS LINE
+                audio.play().catch(e => {
+                    console.log('Sound requires interaction, will play after user interaction');
+                    // If sound fails, try again on first click/touch
+                    const playSoundOnInteraction = () => {
+                        audio.play().catch(e => console.log('Still blocked'));
+                    };
+                    document.addEventListener('click', playSoundOnInteraction, { once: true });
+                    document.addEventListener('touchstart', playSoundOnInteraction, { once: true });
+                });
+            } catch (e) {
+                console.log('Audio error:', e);
+            }
+            
+            // Animation is 3s + 0.5s delay = 3.5s total
+            // Wait additional time (5 seconds) for it to sit there before auto-start
+            autoStartTimer = setTimeout(() => {
+                if (!started) {
+                    startExperience();
+                }
+            }, 7700); // 0.5s delay + 3s animation + 5s sitting = 8.5s total
+            
+        }, 500); // Start 0.5s after page load
+        
+        // Intro text animation
+function startIntroAnimation() {
+    const words = document.querySelectorAll('#sentence1 .word');
+    let i = 0;
+    function revealNext() {
+        if (i < words.length) {
+            words[i].classList.add('revealed');
+            i++;
+            setTimeout(revealNext, 450);
+        } else {
+            setTimeout(() => {
+                document.getElementById('section2').classList.add('active');
+                setTimeout(() => {
+                    document.getElementById('section3').classList.add('active');
+                    setTimeout(() => {
+                        // 1. Fade out entire page (2 seconds)
+                        document.body.style.transition = 'opacity 2s ease';
+                        document.body.style.opacity = '0';
+                        
+                        // 2. Redirect after fade completes
+                        setTimeout(() => {
+                            window.location.href = 'https://ericchuan.com';
+                        }, 2000); // Match fade duration
+                    }, 5500); // Wait 6 seconds before starting fade
+                }, 3000);
+            }, 500);
+        }
+    }
+    revealNext();
+}
+        
+        // Check if mobile and adjust PRESS START for very small screens
+        function adjustForMobile() {
+            const pressStartText = document.querySelector('.press-start-text');
+            if (window.innerWidth <= 480) {
+                pressStartText.style.fontSize = '16px';
+                pressStartText.style.letterSpacing = '3em';
+            }
+        }
+        
+        // Run on load and resize
+        window.addEventListener('load', adjustForMobile);
+        window.addEventListener('resize', adjustForMobile);
+    </script>
+</body>
+</html>
