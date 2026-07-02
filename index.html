@@ -1,459 +1,468 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eric Chuan</title>
-    <meta name="description" content="Eric Chuan — Creative Director. Portfolio of brand, digital, and campaign work for Lacoste, American Express, Morgan Stanley, Bayer, and more.">
-    <meta property="og:title" content="Eric Chuan — Creative Director">
-    <meta property="og:description" content="Portfolio of brand, digital, and campaign work for leading global companies.">
-    <meta property="og:url" content="https://ericchuan.design">
-    
-    <!-- Force light mode -->
-    <meta name="color-scheme" content="light only">
-    <meta name="theme-color" content="#ffffff">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" rel="stylesheet">
-    
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            background: #fff;
-            overflow: hidden;
-            cursor: pointer;
-            font-family: sans-serif;
-            color-scheme: light only;
-        }
-        
-        /* PRESS START ANIMATION STYLES - SIMPLIFIED */
-        .press-start-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #fff;
-            z-index: 1000;
-        }
-        
-        .press-start-text {
-            font-size: 15px; /* Fixed size - no scaling */
-            font-weight: 750;
-            color: black;
-            font-family: 'Roboto', sans-serif;
-            white-space: nowrap;
-            letter-spacing: 15em; /* Start with wide spacing */
-            opacity: 0;
-            animation: pressStartAnim 0.8s ease-out forwards; /* SLOWER animation - 3 seconds */
-            animation-delay: 0.1s; /* Start after 0.5s */
-            padding-left: 3em; /* Compensate for extra-wide spacing */
-        }
-        
-        /* SLOWER animation - just letter spacing change */
-        @keyframes pressStartAnim {
-            0% {
-                opacity: 0;
-                letter-spacing: 15em;
-            }
-            20% {
-                opacity: 1;
-                letter-spacing: 14em;
-            }
-            40% {
-                opacity: 1;
-                letter-spacing: 12em;
-            }
-            60% {
-                opacity: 1;
-                letter-spacing: 9em;
-            }
-            80% {
-                opacity: 1;
-                letter-spacing: 5em;
-            }
-            100% {
-                opacity: 1;
-                letter-spacing: 0.8em; /* End spacing */
-            }
-        }
-        
-        /* Mobile adjustments for PRESS START */
-        @media (max-width: 768px) {
-            .press-start-text {
-                font-size: 13px; /* Smaller on mobile */
-                letter-spacing: 10em; /* Start with less spacing on mobile */
-                padding-left: 0.4em;
-            }
-            
-            @keyframes pressStartAnim {
-                0% {
-                    opacity: 0;
-                    letter-spacing: 10em;
-                }
-                20% {
-                    opacity: 1;
-                    letter-spacing: 9em;
-                }
-                40% {
-                    opacity: 1;
-                    letter-spacing: 8.5em;
-                }
-                60% {
-                    opacity: 1;
-                    letter-spacing: 7em;
-                }
-                80% {
-                    opacity: 1;
-                    letter-spacing: 4em;
-                }
-                100% {
-                    opacity: 1;
-                    letter-spacing: 0.7em; /* Tighter on mobile */
-                }
-            }
-        }
-        
-        /* MAIN CONTENT STYLES */
-        /* Add to your CSS (around line 70) */
-.video-container {
-    transition: opacity 1s ease;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-.video-container.fade-out {
-    opacity: 0;
-}
+  <!-- ─── FROM YOUR FILE (salvaged) ─── -->
+  <title>Eric Chuan — Creative Director & Brand Designer</title>
+  <meta name="description" content="Eric Chuan — Creative Director. Portfolio of brand, digital, and campaign work for Lacoste, American Express, Morgan Stanley, Bayer, and more.">
+  <meta property="og:title" content="Eric Chuan — Creative Director">
+  <meta property="og:description" content="Portfolio of brand, digital, and campaign work for leading global companies.">
+  <meta property="og:url" content="https://ericchuan.design">
+  <meta property="og:type" content="website">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://ericchuan.com/">
+  <meta name="color-scheme" content="light only">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 
-.intro-container {
-    opacity: 0;
-    transition: opacity 1s ease 1s; /* Fade in after 1s delay */
-}
+  <!-- ─── FONTS & GSAP ─── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
-.intro-container.fade-in {
-    opacity: 1;
-}
-        .container {
-            width: 100%;
-            height: 100%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: #fff;
-        }
-        
-        .video-container {
-            display: none;
-            width: 100%;
-            height: 100%;
-            background: #fff;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .intro-video {
-            display: none;
-            width: 100vw;
-            height: 100vh;
-            background: #fff;
-            object-fit: cover;
-            object-position: center;
-        }
-        
-        /* Enable scrolling for mobile when intro text shows */
-        .intro-text-visible {
-            overflow-y: auto !important;
-        }
-        
-        /* Intro styles - RESPONSIVE */
-        .intro-container { 
-            position: fixed; 
-            top: 20px; 
-            left: 20px; 
-            right: 20px;
-            z-index: 10001; 
-            width: calc(100% - 40px);
-            display: none;
-            max-height: calc(100vh - 40px);
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        
-        .intro-text { 
-            font-size: 60px; 
-            font-weight: 600; 
-            line-height: 1.3; 
-            color: #000000; 
-            letter-spacing: -0.02em; 
-            white-space: normal; 
-            overflow: hidden; 
-            margin: 0; 
-            padding: 0; 
-        }
-        /* Add to your CSS */
-.page-fade-out {
-    opacity: 0;
-    transition: opacity 1s ease !important;
-}
-        /* Mobile typography */
-        @media (max-width: 1024px) {
-            .intro-text {
-                font-size: 48px;
-                line-height: 1.25;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .intro-text {
-                font-size: 36px;
-                line-height: 1.2;
-                letter-spacing: -0.01em;
-            }
-            
-            .intro-container {
-                top: 15px;
-                left: 15px;
-                right: 15px;
-                width: calc(100% - 30px);
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .intro-text {
-                font-size: 28px;
-                line-height: 1.15;
-            }
-            
-            .intro-container {
-                top: 10px;
-                left: 10px;
-                right: 10px;
-                width: calc(100% - 20px);
-            }
-            
-            .text-section {
-                margin-bottom: 20px;
-            }
-        }
-        
-        @media (max-width: 360px) {
-            .intro-text {
-                font-size: 24px;
-                line-height: 1.1;
-            }
-        }
-        
-        .text-section { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            opacity: 0; 
-            pointer-events: none; 
-            width: 100%; 
-            transition: opacity 2.5s ease; 
-        }
-        
-        .text-section.active { 
-            opacity: 1; 
-            pointer-events: auto; 
-            position: relative; 
-        }
-        
-        .word { 
-            opacity: 0; 
-            display: inline-block; 
-        }
-        
-        .word.revealed { 
-            opacity: 1; 
-            transition: opacity 0.8s ease; 
-        }
-        
-        .text-section { 
-            margin-bottom: 30px; 
-        }
-        
-        #section3 { 
-            margin-bottom: 0; 
-        }
-        
-        
-    </style>
+  <style>
+    /* ── SCROLL CINEMATIC STYLES (our version) ── */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      overflow-x: hidden;
+      background: #fff;
+    }
+    #master-spacer { height: 3000vh; width: 100%; }
+    #scroll-hint {
+      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+      z-index: 15;
+      color: rgba(255,255,255,0.3);
+      font-size: 0.8rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    #scroll-hint span {
+      display: block; margin: 10px auto 0;
+      width: 20px; height: 30px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 10px;
+      position: relative;
+    }
+    #scroll-hint span::after {
+      content: '';
+      position: absolute; top: 6px; left: 50%;
+      transform: translateX(-50%);
+      width: 3px; height: 8px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 2px;
+      animation: scrollDot 2s ease-in-out infinite;
+    }
+    @keyframes scrollDot {
+      0% { top: 6px; opacity: 1; }
+      100% { top: 18px; opacity: 0; }
+    }
+    #phase-intro {
+      position: fixed; inset: 0; z-index: 10;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .word {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      color: #fff;
+      font-weight: 600;
+      font-size: clamp(2.8rem, 4.5vw, 4.4rem);
+      white-space: nowrap;
+      will-change: transform, opacity;
+      transform-origin: center center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.03em;
+      opacity: 0;
+    }
+    .bonjour { letter-spacing: 0.04em; }
+    .letter {
+      display: inline-block;
+      will-change: transform, opacity;
+      transform-origin: center bottom;
+    }
+    #phase-circle {
+      position: fixed; inset: 0; z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+    }
+    #iris-circle {
+      width: 0.5vmin;
+      height: 0.5vmin;
+      background: #fff;
+      border-radius: 50%;
+      will-change: transform;
+    }
+    #phase-fly {
+      position: fixed; inset: 0; z-index: 30;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      will-change: opacity;
+    }
+    #fly-logo {
+      max-width: 70vw;
+      max-height: 70vh;
+      opacity: 0;
+      will-change: transform, opacity, filter;
+    }
+    #white-wipe {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: #fff;
+      transform: translateY(100%);
+      pointer-events: none;
+      will-change: transform;
+      opacity: 0;
+    }
+    #mission-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      z-index: 50;
+      background: #fff;
+      padding: 30px 0 0 30px;
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow: hidden;
+      transform: translateY(100%);
+    }
+    .text-wrapper {
+      width: 100%;
+      max-width: 1300px;
+      margin: 0 auto;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    .mission-line {
+      font-size: 3.6rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      transform: translateY(100%);
+      opacity: 0;
+      will-change: transform, opacity, background-position, color;
+    }
+    #line-1 {
+      color: transparent;
+      background-image: linear-gradient(to right, #bfbfbf 50%, #000000 50%);
+      background-size: 200% 100%;
+      background-position: 0% 0%;
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+    #line-2, #line-3 { color: #bfbfbf; }
+    .word-highlight {
+      display: inline-block;
+      color: #bfbfbf;
+      will-change: color;
+      transition: none;
+    }
+    @media (max-width: 1024px) {
+      .word { font-size: clamp(2.4rem, 4.5vw, 3.8rem); }
+      .mission-line { font-size: 2.8rem; }
+      #mission-container { padding: 25px 0 0 20px; }
+      .text-wrapper { max-width: 900px; }
+    }
+    @media (max-width: 768px) {
+      .word { font-size: clamp(1.8rem, 8vw, 2.8rem); }
+      .mission-line { font-size: 2rem; line-height: 1.2; margin-bottom: 0.8rem; }
+      #mission-container { padding: 20px 0 0 15px; }
+      .text-wrapper { max-width: 100%; }
+    }
+  </style>
 </head>
 <body>
-    <!-- Single PRESS START Animation -->
-    <div class="press-start-container">
-        <div class="press-start-text">PRESS START</div>
-    </div>
-    
-    <!-- Main content (hidden initially) -->
-    <div class="container">
-        <div class="video-container">
-            <video class="intro-video" playsinline>
-                <source src="assets/Eric-Chuan-hello.mp4" type="video/mp4">
-            </video>
-        </div>
-        <div class="intro-container">
-            <div class="intro-text">
-                <div class="text-section active" id="section1">
-                    <span id="sentence1">
-                        <span class="word">Make</span>
-                        <span class="word">powerful</span>
-                        <span class="word">first</span>
-                        <span class="word">impressions</span>
-                        <span class="word">that</span>
-                        <span class="word">last.</span>
-                    </span>
-                </div>
-                <div class="text-section" id="section2">
-                    Look good on paper, in the social sphere, and at events, especially annual general meetings.
-                </div>
-                <div class="text-section" id="section3">
-                    Two decades of corporate, agency, and independent experience growing brands of every scale—from Fortune 500 to mom-and-pop stores across finance, fashion, retail, healthcare + more.
-                </div>
-            </div>
-        </div>
-    </div>
-    
-  
+<div id="master-spacer"></div>
+<div id="scroll-hint">scroll <span></span></div>
 
-    <script>
-        // Variables
-        let started = false;
-        let autoStartTimer;
-        
-        // Function to start the experience immediately
-        function startExperience() {
-            if (started) return;
-            started = true;
-            
-            // Clear any pending auto-start timer
-            clearTimeout(autoStartTimer);
-            
-            // Hide PRESS START animation immediately
-            document.querySelector('.press-start-container').style.display = 'none';
-            
-            // Show main container
-            document.querySelector('.container').style.display = 'flex';
-            document.querySelector('.video-container').style.display = 'flex';
-            document.querySelector('.intro-video').style.display = 'block';
-            
-            // Play video immediately
-            const video = document.querySelector('.intro-video');
-            video.volume = 0.3;
-            video.play().catch(e => {
-                console.log('Autoplay blocked, muting and retrying');
-                video.muted = true;
-                video.play();
-            });
-            
-            video.addEventListener('ended', () => {
-    setTimeout(() => {
-        // 1. Fade out video container
-        document.querySelector('.video-container').classList.add('fade-out');
-        
-        // 2. After 1s fade completes, hide video and show intro
-        setTimeout(() => {
-            document.querySelector('.video-container').style.display = 'none';
-            document.querySelector('.intro-container').style.display = 'block';
-            
-            // 3. Fade in intro text
-            document.querySelector('.intro-container').classList.add('fade-in');
-            
-            startIntroAnimation();
-        }, 700); // Wait for video fade to complete
-    }, 0); // Initial 500ms delay after video ends
-});
+<div id="phase-intro">
+  <span class="word">Hello</span>
+  <span class="word">你好</span>
+  <span class="word">שלום</span>
+  <span class="word">Hola</span>
+  <span class="word">こんにちは</span>
+  <span class="word">Cześć</span>
+  <span class="word">안녕하세요</span>
+  <span class="word">สวัสดี</span>
+  <span class="word bonjour">Bonjour</span>
+</div>
+
+<div id="phase-circle"><div id="iris-circle"></div></div>
+
+<div id="phase-fly">
+  <img id="fly-logo" src="assets/my Logo.svg" alt="Eric Chuan">
+</div>
+
+<div id="white-wipe"></div>
+
+<div id="mission-container">
+  <div class="text-wrapper">
+    <div class="mission-line" id="line-1">Make powerful first impressions that last.</div>
+    <div class="mission-line" id="line-2">Look good on paper, in the social sphere, and at events, especially annual general meetings.</div>
+    <div class="mission-line" id="line-3">Two decades of corporate, agency, and independent experience growing brands of every scale — from Fortune 500 to mom-and-pop stores across finance, fashion, retail, healthcare + more.</div>
+  </div>
+</div>
+
+<!-- ─── AUDIO (fly‑by + boom) ─── -->
+<audio id="fly-sound" preload="auto">
+  <source src="assets/fly-by.mp3" type="audio/mpeg">
+</audio>
+<audio id="boom-sound" preload="auto">
+  <source src="assets/boom.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+window.addEventListener('load', () => {
+  // ── Split greetings into letters ──
+  const wordElements = document.querySelectorAll('.word');
+  const wordData = [];
+  wordElements.forEach(el => {
+    const chars = Array.from(el.textContent.trim());
+    el.innerHTML = '';
+    const letters = chars.map(char => {
+      const span = document.createElement('span');
+      span.textContent = char === ' ' ? '\u00A0' : char;
+      span.className = 'letter';
+      el.appendChild(span);
+      return span;
+    });
+    wordData.push({ el, letters });
+  });
+
+  // ── Elements ──
+  const iris = document.querySelector('#iris-circle');
+  const phaseCircle = document.querySelector('#phase-circle');
+  const flyLogo = document.querySelector('#fly-logo');
+  const phaseFly = document.querySelector('#phase-fly');
+  const whiteWipe = document.querySelector('#white-wipe');
+  const missionContainer = document.getElementById('mission-container');
+  const lines = document.querySelectorAll('.mission-line');
+  const scrollHint = document.querySelector('#scroll-hint');
+
+  const flyAudio = document.getElementById('fly-sound');
+  const boomAudio = document.getElementById('boom-sound');
+
+  // ── Unlock audio on first interaction ──
+  function unlockAudio() {
+    [flyAudio, boomAudio].forEach(audio => {
+      if (audio && audio.paused) {
+        audio.play().then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+        }).catch(() => {});
+      }
+    });
+    document.removeEventListener('scroll', unlockAudio);
+    document.removeEventListener('click', unlockAudio);
+  }
+  document.addEventListener('scroll', unlockAudio);
+  document.addEventListener('click', unlockAudio);
+
+  // ── Split mission lines into words ──
+  function splitLine(element) {
+    const text = element.textContent;
+    const parts = text.split(/(\s+)/).filter(p => p.length > 0);
+    element.innerHTML = '';
+    parts.forEach(p => {
+      if (p.trim() === '') {
+        element.appendChild(document.createTextNode(p));
+      } else {
+        const span = document.createElement('span');
+        span.className = 'word-highlight';
+        span.textContent = p;
+        element.appendChild(span);
+      }
+    });
+    return element.querySelectorAll('.word-highlight');
+  }
+
+  const words2 = splitLine(document.getElementById('line-2'));
+  const words3 = splitLine(document.getElementById('line-3'));
+
+  // ─── MASTER TIMELINE ───
+  const master = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#master-spacer',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 2.0,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        if (scrollHint) {
+          scrollHint.style.opacity = self.progress > 0.08 ? '0' : '1 - (self.progress / 0.08)';
         }
-        
-        // Click anywhere to start immediately
-        document.addEventListener('click', startExperience);
-        
-        // Also allow tapping on mobile
-        document.addEventListener('touchstart', startExperience);
-        
-        // Start after 0.5 seconds and play sound
-        setTimeout(() => {
-            // Animation starts automatically via CSS animation-delay
-            
-            // Play countdown sound
-            try {
-                const audio = new Audio('assets/Eric-Chuan-Countdown.mp3');
-                audio.volume = 0.3;  // <-- ADD THIS LINE
-                audio.play().catch(e => {
-                    console.log('Sound requires interaction, will play after user interaction');
-                    // If sound fails, try again on first click/touch
-                    const playSoundOnInteraction = () => {
-                        audio.play().catch(e => console.log('Still blocked'));
-                    };
-                    document.addEventListener('click', playSoundOnInteraction, { once: true });
-                    document.addEventListener('touchstart', playSoundOnInteraction, { once: true });
-                });
-            } catch (e) {
-                console.log('Audio error:', e);
-            }
-            
-            // Animation is 3s + 0.5s delay = 3.5s total
-            // Wait additional time (5 seconds) for it to sit there before auto-start
-            autoStartTimer = setTimeout(() => {
-                if (!started) {
-                    startExperience();
-                }
-            }, 7700); // 0.5s delay + 3s animation + 5s sitting = 8.5s total
-            
-        }, 500); // Start 0.5s after page load
-        
-        // Intro text animation
-function startIntroAnimation() {
-    const words = document.querySelectorAll('#sentence1 .word');
-    let i = 0;
-    function revealNext() {
-        if (i < words.length) {
-            words[i].classList.add('revealed');
-            i++;
-            setTimeout(revealNext, 450);
-        } else {
-            setTimeout(() => {
-                document.getElementById('section2').classList.add('active');
-                setTimeout(() => {
-                    document.getElementById('section3').classList.add('active');
-                    setTimeout(() => {
-                        // 1. Fade out entire page (2 seconds)
-                        document.body.style.transition = 'opacity 2s ease';
-                        document.body.style.opacity = '0';
-                        
-                        // 2. Redirect after fade completes
-                        setTimeout(() => {
-                            window.location.href = 'https://ericchuan.com';
-                        }, 2000); // Match fade duration
-                    }, 5500); // Wait 6 seconds before starting fade
-                }, 3000);
-            }, 500);
-        }
+      }
     }
-    revealNext();
-}
-        
-        // Check if mobile and adjust PRESS START for very small screens
-        function adjustForMobile() {
-            const pressStartText = document.querySelector('.press-start-text');
-            if (window.innerWidth <= 480) {
-                pressStartText.style.fontSize = '16px';
-                pressStartText.style.letterSpacing = '3em';
-            }
-        }
-        
-        // Run on load and resize
-        window.addEventListener('load', adjustForMobile);
-        window.addEventListener('resize', adjustForMobile);
-    </script>
+  });
+
+  // ── 1. GREETINGS ──
+  const gap = 0.32;
+  const unfoldDur = 0.35;
+  const decayStart = 0.25;
+  const decayDur = 0.45;
+
+  wordData.forEach((data, i) => {
+    const { el, letters } = data;
+    const startTime = i * gap;
+    const fromX = (i % 2 === 0) ? -900 : 900;
+    const fromRotateY = (i % 2 === 0) ? -75 : 75;
+
+    master.set(el, {
+      xPercent: -50,
+      yPercent: -50,
+      x: fromX,
+      y: 0,
+      rotateY: fromRotateY,
+      scaleX: 0.1,
+      skewX: 12,
+      opacity: 0
+    }, 0);
+
+    master.to(el, {
+      x: 0,
+      y: 0,
+      rotateY: 0,
+      scaleX: 1,
+      skewX: 0,
+      opacity: 1,
+      duration: unfoldDur,
+      ease: 'power3.out'
+    }, startTime);
+
+    master.to(letters, {
+      y: 140,
+      rotation: 35,
+      x: (idx) => (idx % 2 === 0 ? 50 : -50),
+      opacity: 0,
+      stagger: 0.025,
+      duration: decayDur,
+      ease: 'power2.in'
+    }, startTime + decayStart);
+  });
+
+  // ── 2. WHITE DOT ──
+  master.set(phaseCircle, { opacity: 1 }, 3.0);
+  master.set(iris, { scale: 1, opacity: 1 }, 3.0);
+  master.to(iris, { scale: 250, duration: 0.8, ease: 'power2.inOut' }, 3.05);
+  master.set(phaseCircle, { opacity: 0 }, 4.8);
+
+  // ── 3. LOGO ──
+  master.set(phaseFly, { opacity: 1, background: '#fff' }, 4.0);
+  master.set(flyLogo, {
+    opacity: 0,
+    scale: 35,
+    rotation: 5,
+    filter: 'grayscale(0)',
+    y: -35
+  }, 4.05);
+
+  master.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, 4.1);
+  master.to(flyLogo, {
+    scale: 0.8,
+    rotation: 0,
+    y: -35,
+    duration: 1.4,
+    ease: 'power2.inOut'
+  }, 4.15);
+
+  master.to(flyLogo, { filter: 'grayscale(1)', duration: 0.4 }, 5.8);
+  master.to(flyLogo, { opacity: 0, duration: 0.4 }, 5.8);
+  master.to(phaseFly, { opacity: 0, duration: 0.4 }, 5.8);
+
+  // ── 4. AUDIO TRIGGERS ──
+  master.call(() => {
+    if (flyAudio) {
+      flyAudio.currentTime = 0;
+      flyAudio.play().catch(() => {});
+    }
+  }, [], 4.15);
+
+  master.call(() => {
+    if (flyAudio && !flyAudio.paused) {
+      flyAudio.pause();
+      flyAudio.currentTime = 0;
+    }
+  }, [], 5.55);
+
+  master.call(() => {
+    if (boomAudio) {
+      boomAudio.currentTime = 0;
+      boomAudio.play().catch(() => {});
+    }
+  }, [], 5.55);
+
+  // ── 5. WHITE WIPE & MISSION ──
+  master.set(whiteWipe, { opacity: 0, y: '100%' }, 6.0);
+  master.set(missionContainer, { opacity: 0, y: '100%' }, 6.0);
+
+  master.to(whiteWipe, { opacity: 1, y: '0%', duration: 0.3, ease: 'power2.out' }, 6.1);
+  master.to(missionContainer, { opacity: 1, y: '0%', duration: 0.3, ease: 'power2.out' }, 6.1);
+
+  master.set(lines, { y: '100%', opacity: 0 }, 6.5);
+
+  master.to('#line-1', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 6.55);
+  master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.4, ease: 'power1.inOut' }, 6.7);
+
+  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 7.15);
+  master.to(words2, { color: '#000000', stagger: 0.12, duration: 0.2, ease: 'power1.inOut' }, 7.3);
+
+  const line2End = 7.3 + (words2.length * 0.12) + 0.2;
+  const line3Start = line2End + 0.1;
+  master.to('#line-3', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, line3Start);
+  master.to(words3, { color: '#000000', stagger: 0.12, duration: 0.2, ease: 'power1.inOut' }, line3Start + 0.15);
+
+  // ── 6. FADE TO WHITE ──
+  const allWords = [...words2, ...words3];
+  const line3End = line3Start + 0.15 + (words3.length * 0.12) + 0.2;
+  const fadeStart = line3End + 0.2;
+
+  master.to('#line-1', { backgroundImage: 'linear-gradient(to right, #ffffff 50%, #ffffff 50%)', duration: 0.6, ease: 'power1.inOut' }, fadeStart);
+  master.to(allWords, { color: '#ffffff', duration: 0.6, ease: 'power1.inOut' }, fadeStart);
+
+  // ── 7. REDIRECT ──
+  master.call(() => {
+    document.body.style.transition = 'opacity 1s ease';
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+      window.location.href = 'https://ericchuan.com';
+    }, 1200);
+  }, [], fadeStart + 1.4);
+
+  window.addEventListener('resize', ScrollTrigger.refresh);
+  console.log('✅ Merged: your meta/icons + our scroll cinematic.');
+});
+</script>
 </body>
 </html>
