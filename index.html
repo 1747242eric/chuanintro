@@ -21,7 +21,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <style>
-    /* (same CSS – unchanged) */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
@@ -113,23 +112,14 @@
       justify-content: center;
       pointer-events: none;
       opacity: 0;
-      will-change: opacity;
+      perspective: 800px;
     }
     #fly-logo {
       max-width: 70vw;
       max-height: 70vh;
       opacity: 0;
-      will-change: transform, opacity, filter;
-    }
-    #white-wipe {
-      position: fixed;
-      inset: 0;
-      z-index: 40;
-      background: #fff;
-      transform: translateY(100%);
-      pointer-events: none;
-      will-change: transform;
-      opacity: 0;
+      will-change: transform, opacity;
+      transform-style: preserve-3d;
     }
     #mission-container {
       position: fixed;
@@ -146,7 +136,6 @@
       flex-direction: column;
       justify-content: flex-start;
       overflow: hidden;
-      transform: translateY(100%);
     }
     .text-wrapper {
       width: 100%;
@@ -163,7 +152,6 @@
       line-height: 1.2;
       letter-spacing: -0.02em;
       margin-bottom: 1rem;
-      transform: translateY(100%);
       opacity: 0;
       will-change: transform, opacity, background-position, color;
     }
@@ -218,8 +206,6 @@
   <img id="fly-logo" src="assets/my Logo.svg" alt="Eric Chuan">
 </div>
 
-<div id="white-wipe"></div>
-
 <div id="mission-container">
   <div class="text-wrapper">
     <div class="mission-line" id="line-1">Make powerful first impressions that last.</div>
@@ -260,7 +246,6 @@ window.addEventListener('load', () => {
   const phaseCircle = document.querySelector('#phase-circle');
   const flyLogo = document.querySelector('#fly-logo');
   const phaseFly = document.querySelector('#phase-fly');
-  const whiteWipe = document.querySelector('#white-wipe');
   const missionContainer = document.getElementById('mission-container');
   const lines = document.querySelectorAll('.mission-line');
   const scrollHint = document.querySelector('#scroll-hint');
@@ -319,7 +304,7 @@ window.addEventListener('load', () => {
     }
   });
 
-  // ── 1. GREETINGS ──
+  // ── 1. GREETINGS (ORIGINAL TIMING) ──
   const gap = 0.32;
   const unfoldDur = 0.35;
   const decayStart = 0.25;
@@ -364,99 +349,71 @@ window.addEventListener('load', () => {
     }, startTime + decayStart);
   });
 
-  // ── 2. WHITE DOT ──
+  // ── 2. WHITE DOT (ORIGINAL TIMING) ──
   master.set(phaseCircle, { opacity: 1 }, 3.0);
   master.set(iris, { scale: 1, opacity: 1 }, 3.0);
   master.to(iris, { scale: 250, duration: 0.8, ease: 'power2.inOut' }, 3.05);
   master.set(phaseCircle, { opacity: 0 }, 4.8);
 
-  // ── 3. LOGO ──
+  // ── 3. LOGO (ORIGINAL ENTRANCE — NEW EXIT) ──
   master.set(phaseFly, { opacity: 1, background: '#fff' }, 4.0);
-  master.set(flyLogo, {
-    opacity: 0,
-    scale: 35,
-    rotation: 5,
-    filter: 'grayscale(0)',
-    y: -35
-  }, 4.05);
+  master.set(flyLogo, { opacity: 0, scale: 35, rotation: 5, filter: 'grayscale(0)', y: -35 }, 4.05);
 
+  // Fly-in entrance (unchanged)
   master.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, 4.1);
-  master.to(flyLogo, {
-    scale: 0.8,
-    rotation: 0,
-    y: -35,
-    duration: 1.4,
-    ease: 'power2.inOut'
-  }, 4.15);
+  master.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 1.4, ease: 'power2.inOut' }, 4.15);
 
-  master.to(flyLogo, { filter: 'grayscale(1)', duration: 0.4 }, 5.8);
-  master.to(flyLogo, { opacity: 0, duration: 0.4 }, 5.8);
-  master.to(phaseFly, { opacity: 0, duration: 0.4 }, 5.8);
+  // Audio triggers (unchanged)
+  master.call(() => { if (flyAudio) { flyAudio.currentTime = 0; flyAudio.play().catch(() => {}); } }, [], 4.15);
+  master.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], 5.55);
+  master.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.play().catch(() => {}); } }, [], 5.55);
 
-  // ── 4. AUDIO TRIGGERS ──
-  master.call(() => {
-    if (flyAudio) {
-      flyAudio.currentTime = 0;
-      flyAudio.play().catch(() => {});
-    }
-  }, [], 4.15);
+  // Logo hold then exit (replaced grayscale+fade with spin+fold+shorten)
+  master.set(flyLogo, { opacity: 1 }, 5.8);
+  master.to(flyLogo, { rotationY: 810, duration: 0.45, ease: 'power3.out' }, 5.85);
+  master.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 6.3);
+  master.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 6.45);
 
-  master.call(() => {
-    if (flyAudio && !flyAudio.paused) {
-      flyAudio.pause();
-      flyAudio.currentTime = 0;
-    }
-  }, [], 5.55);
+  // ── 4. MISSION — appears as logo finishes ──
+  master.set(missionContainer, { opacity: 1, y: '0%' }, 6.6);
+  master.set(phaseFly, { opacity: 0 }, 6.6);
 
-  master.call(() => {
-    if (boomAudio) {
-      boomAudio.currentTime = 0;
-      boomAudio.play().catch(() => {});
-    }
-  }, [], 5.55);
+  master.set('#line-2, #line-3', { y: '100%', opacity: 0 }, 6.6);
+  master.set('#line-1', { y: '500%', opacity: 0 }, 6.6);
 
-  // ── 5. WHITE WIPE & MISSION ──
-  master.set(whiteWipe, { opacity: 0, y: '100%' }, 6.0);
-  master.set(missionContainer, { opacity: 0, y: '100%' }, 6.0);
+  // Line 1 fades in gradually while flying up — transparent at start, solid by park
+  master.set('#line-1', { y: '500%', opacity: 0 }, 6.6);
+  master.to('#line-1', { opacity: 1, duration: 1.0, ease: 'power1.inOut' }, 6.6);
+  master.to('#line-1', { y: '0%', duration: 1.0, ease: 'power2.out' }, 6.6);
+  master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.4, ease: 'power1.inOut' }, 7.6);
 
-  master.to(whiteWipe, { opacity: 1, y: '0%', duration: 0.3, ease: 'power2.out' }, 6.1);
-  master.to(missionContainer, { opacity: 1, y: '0%', duration: 0.3, ease: 'power2.out' }, 6.1);
+  // Line 2+3 — wait until line 1 gradient fully settles
+  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 8.5);
+  master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 8.65);
 
-  master.set(lines, { y: '100%', opacity: 0 }, 6.5);
-
-  master.to('#line-1', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 6.55);
-  master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.4, ease: 'power1.inOut' }, 6.7);
-
-  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 7.15);
-  master.to(words2, { color: '#000000', stagger: 0.12, duration: 0.2, ease: 'power1.inOut' }, 7.3);
-
-  const line2End = 7.3 + (words2.length * 0.12) + 0.2;
+  const line2End = 8.65 + (words2.length * 0.06) + 0.15;
   const line3Start = line2End + 0.1;
   master.to('#line-3', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, line3Start);
-  master.to(words3, { color: '#000000', stagger: 0.12, duration: 0.2, ease: 'power1.inOut' }, line3Start + 0.15);
+  master.to(words3, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, line3Start + 0.15);
 
-  // ── 6. FADE TO WHITE ──
+  // ── 5. FADE WHITE + REDIRECT ──
   const allWords = [...words2, ...words3];
-  const line3End = line3Start + 0.15 + (words3.length * 0.12) + 0.2;
+  const line3End = line3Start + 0.15 + (words3.length * 0.06) + 0.15;
   const fadeStart = line3End + 0.2;
 
-  // Start the white fade
   master.to('#line-1', { backgroundImage: 'linear-gradient(to right, #ffffff 50%, #ffffff 50%)', duration: 0.6, ease: 'power1.inOut' }, fadeStart);
   master.to(allWords, { color: '#ffffff', duration: 0.6, ease: 'power1.inOut' }, fadeStart);
 
-  // ── 7. REDIRECT – schedule it right when the fade begins ──
   master.call(() => {
-    // Start the page fade
     document.body.style.transition = 'opacity 1s ease';
     document.body.style.opacity = '0';
-    // Redirect after the page fade completes (1.2s total – 0.6s for white fade + 0.6s for body fade)
     setTimeout(() => {
       window.location.href = 'https://ericchuan.com';
     }, 1200);
   }, [], fadeStart);
 
   window.addEventListener('resize', ScrollTrigger.refresh);
-  console.log('✅ Redirect scheduled at fade start – no extra scroll needed.');
+  console.log('✅ Done');
 });
 </script>
 </body>
