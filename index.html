@@ -381,17 +381,16 @@ window.addEventListener('load', () => {
   master.set('#line-2, #line-3', { y: '100%', opacity: 0 }, 6.6);
   master.set('#line-1', { y: '500%', opacity: 0 }, 6.6);
 
-  // Line 1 fades in gradually while flying up — transparent at start, solid by park
-  master.set('#line-1', { y: '500%', opacity: 0 }, 6.6);
-  master.to('#line-1', { opacity: 1, duration: 1.0, ease: 'power1.inOut' }, 6.6);
+  // Line 1 appears fast during rise — gradient begins at park
+  master.to('#line-1', { opacity: 1, duration: 0.35, ease: 'power1.out' }, 6.6);
   master.to('#line-1', { y: '0%', duration: 1.0, ease: 'power2.out' }, 6.6);
   master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.4, ease: 'power1.inOut' }, 7.6);
 
-  // Line 2+3 — wait until line 1 gradient fully settles
-  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 8.5);
-  master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 8.65);
+  // Line 2 appears as line 1 gradient reveals
+  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 7.6);
+  master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 7.75);
 
-  const line2End = 8.65 + (words2.length * 0.06) + 0.15;
+  const line2End = 7.75 + (words2.length * 0.06) + 0.15;
   const line3Start = line2End + 0.1;
   master.to('#line-3', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, line3Start);
   master.to(words3, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, line3Start + 0.15);
