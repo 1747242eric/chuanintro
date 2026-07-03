@@ -368,29 +368,29 @@ window.addEventListener('load', () => {
   master.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], 5.55);
   master.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.play().catch(() => {}); } }, [], 5.55);
 
-  // Logo hold then exit (replaced grayscale+fade with spin+fold+shorten)
+  // Logo holds, then 0.15s beat before spin
   master.set(flyLogo, { opacity: 1 }, 5.8);
-  master.to(flyLogo, { rotationY: 810, duration: 0.45, ease: 'power3.out' }, 5.85);
-  master.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 6.3);
-  master.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 6.45);
+  master.to(flyLogo, { rotationY: 810, duration: 0.45, ease: 'power3.out' }, 6.0);
+  master.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 6.45);
+  master.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 6.6);
 
   // ── 4. MISSION — appears as logo finishes ──
-  master.set(missionContainer, { opacity: 1, y: '0%' }, 6.6);
-  master.set(phaseFly, { opacity: 0 }, 6.6);
+  master.set(missionContainer, { opacity: 1, y: '0%' }, 6.75);
+  master.set(phaseFly, { opacity: 0 }, 6.75);
 
-  master.set('#line-2, #line-3', { y: '100%', opacity: 0 }, 6.6);
-  master.set('#line-1', { y: '500%', opacity: 0 }, 6.6);
+  master.set('#line-2, #line-3', { y: '100%', opacity: 0 }, 6.75);
+  master.set('#line-1', { y: '750%', opacity: 0 }, 6.75);
 
   // Line 1 appears fast during rise — gradient begins at park
-  master.to('#line-1', { opacity: 1, duration: 0.35, ease: 'power1.out' }, 6.6);
-  master.to('#line-1', { y: '0%', duration: 1.0, ease: 'power2.out' }, 6.6);
-  master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.4, ease: 'power1.inOut' }, 7.6);
+  master.to('#line-1', { opacity: 1, duration: 0.35, ease: 'power1.out' }, 6.75);
+  master.to('#line-1', { y: '0%', duration: 1.0, ease: 'power2.out' }, 6.75);
+  master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.6, ease: 'power1.inOut' }, 7.6);
 
-  // Line 2 appears as line 1 gradient reveals
-  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 7.6);
-  master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 7.75);
+  // Line 2 appears as last words of line 1 turn black
+  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 8.0);
+  master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 8.15);
 
-  const line2End = 7.75 + (words2.length * 0.06) + 0.15;
+  const line2End = 8.15 + (words2.length * 0.06) + 0.15;
   const line3Start = line2End + 0.1;
   master.to('#line-3', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, line3Start);
   master.to(words3, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, line3Start + 0.15);
