@@ -258,9 +258,11 @@ window.addEventListener('load', () => {
   function unlockAudio() {
     [flyAudio, boomAudio].forEach(audio => {
       if (audio && audio.paused) {
+        audio.volume = 0;
         audio.play().then(() => {
           audio.pause();
           audio.currentTime = 0;
+          audio.volume = 1;
         }).catch(() => {});
       }
     });
@@ -393,6 +395,11 @@ window.addEventListener('load', () => {
   master.to('#line-3', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, line3Start);
   master.to(words3, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, line3Start + 0.15);
 
+  // ── 5. FADE WHITE + REDIRECT ──
+  const allWords = [...words2, ...words3];
+  const line3End = line3Start + 0.15 + (words3.length * 0.06) + 0.15;
+  const fadeStart = line3End + 0.2;
+
   // ── 4.5 SCROLL HINT — ON/OFF THROUGHOUT ──
   function hintPulse(start) {
     master.to(scrollHint, { opacity: 0, duration: 0.2, ease: 'power1.inOut' }, start);
@@ -405,11 +412,6 @@ window.addEventListener('load', () => {
   hintPulse(7.9);
   hintPulse(line2End - 0.4);
   hintPulse(line3End - 0.3);
-
-  // ── 5. FADE WHITE + REDIRECT ──
-  const allWords = [...words2, ...words3];
-  const line3End = line3Start + 0.15 + (words3.length * 0.06) + 0.15;
-  const fadeStart = line3End + 0.2;
 
   master.to('#line-1', { backgroundImage: 'linear-gradient(to right, #ffffff 50%, #ffffff 50%)', duration: 0.6, ease: 'power1.inOut' }, fadeStart);
   master.to(allWords, { color: '#ffffff', duration: 0.6, ease: 'power1.inOut' }, fadeStart);
