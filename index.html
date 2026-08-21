@@ -28,37 +28,39 @@
       overflow-x: hidden;
       background: #fff;
     }
-    #master-spacer { height: 3000vh; width: 100%; }
+    #master-spacer { height: 2100vh; width: 100%; }
     #scroll-hint {
-      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
-      z-index: 15;
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+      z-index: 70;
       color: rgba(255,255,255,0.3);
-      font-size: 0.8rem;
+      font-size: 0.88rem;
       letter-spacing: 0.3em;
       text-transform: uppercase;
       pointer-events: none;
-      transition: opacity 0.2s;
     }
     #scroll-hint span {
-      display: block; margin: 10px auto 0;
-      width: 20px; height: 30px;
+      display: block; margin: 11px auto 0;
+      width: 22px; height: 33px;
       border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 10px;
+      border-radius: 11px;
       position: relative;
     }
     #scroll-hint span::after {
       content: '';
-      position: absolute; top: 6px; left: 50%;
+      position: absolute; top: 7px; left: 50%;
       transform: translateX(-50%);
-      width: 3px; height: 8px;
+      width: 3px; height: 9px;
       background: rgba(255,255,255,0.5);
       border-radius: 2px;
       animation: scrollDot 2s ease-in-out infinite;
     }
     @keyframes scrollDot {
-      0% { top: 6px; opacity: 1; }
-      100% { top: 18px; opacity: 0; }
+      0% { top: 20px; opacity: 1; }
+      100% { top: 7px; opacity: 0; }
     }
+    #scroll-hint.dark { color: rgba(0,0,0,0.35); }
+    #scroll-hint.dark span { border-color: rgba(0,0,0,0.35); }
+    #scroll-hint.dark span::after { background: rgba(0,0,0,0.55); }
     #phase-intro {
       position: fixed; inset: 0; z-index: 10;
       background: #000;
@@ -296,11 +298,7 @@ window.addEventListener('load', () => {
       end: 'bottom bottom',
       scrub: 2.0,
       invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        if (scrollHint) {
-          scrollHint.style.opacity = self.progress > 0.08 ? '0' : '1 - (self.progress / 0.08)';
-        }
-      }
+      onUpdate: (self) => {}
     }
   });
 
@@ -364,9 +362,9 @@ window.addEventListener('load', () => {
   master.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 1.4, ease: 'power2.inOut' }, 4.15);
 
   // Audio triggers (unchanged)
-  master.call(() => { if (flyAudio) { flyAudio.currentTime = 0; flyAudio.play().catch(() => {}); } }, [], 4.15);
+  master.call(() => { if (flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.6; flyAudio.play().catch(() => {}); } }, [], 4.15);
   master.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], 5.55);
-  master.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.play().catch(() => {}); } }, [], 5.55);
+  master.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], 5.55);
 
   // Logo holds, then 0.15s beat before spin
   master.set(flyLogo, { opacity: 1 }, 5.8);
@@ -394,6 +392,19 @@ window.addEventListener('load', () => {
   const line3Start = line2End + 0.1;
   master.to('#line-3', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, line3Start);
   master.to(words3, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, line3Start + 0.15);
+
+  // ── 4.5 SCROLL HINT — ON/OFF THROUGHOUT ──
+  function hintPulse(start) {
+    master.to(scrollHint, { opacity: 0, duration: 0.2, ease: 'power1.inOut' }, start);
+    master.to(scrollHint, { opacity: 1, duration: 0.25, ease: 'power1.inOut' }, start + 0.7);
+  }
+  hintPulse(1.6);
+  hintPulse(3.4);
+  hintPulse(5.0);
+  master.call(() => scrollHint.classList.add('dark'), [], 6.75);
+  hintPulse(7.9);
+  hintPulse(line2End - 0.4);
+  hintPulse(line3End - 0.3);
 
   // ── 5. FADE WHITE + REDIRECT ──
   const allWords = [...words2, ...words3];
