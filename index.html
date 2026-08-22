@@ -404,9 +404,12 @@ window.addEventListener('load', () => {
   // sweep. NO fromTo, NO circle — the dot is gone for good.
 
   // ── 3. LOGO (ORIGINAL ENTRANCE — NEW EXIT) ──
-  master.set(phaseFly, { opacity: 0 }, 3.0);   // explicit hidden anchor (rewind-safe)
-  // the white (the paper) holds from 3.05 — no fromTo (it snapped the white
-  // off on forward scrub after park).
+  // NO master set on phaseFly at 3.0: CSS defaults #phase-fly to opacity 0,
+  // and a master SET here would re-render on every scroll tick while the
+  // movie plays (the clamp pins the master at 3.0) — FIGHTING the movie's
+  // white sweep on the same element and killing it. The movie owns the
+  // takeover; the master only HOLDS the white from 3.05 (no fromTo — it
+  // snapped the white off on forward scrub after park).
   master.set(phaseFly, { opacity: 1, background: '#fff' }, 3.05);
   // ── The logo entrance is now THE MOVIE (see below): a locked, time-based
   //    sequence from the white takeover to the logo parked. Master resumes at
