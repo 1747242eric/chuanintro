@@ -501,7 +501,7 @@ window.addEventListener('load', () => {
   // the boom lands at the PARK (3.1 — Eric's reference). The swoosh is well
   // into its fade by then; the loud park masks the overlap. Guarded by
   // movieState so a backward scrub render can never re-fire the audio.
-  movie.call(() => { if (movieState === 'playing' && boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], 3.1);
+  movie.call(() => { if (movieState === 'playing' && boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], 2.7);
   movie.set(flyLogo, { opacity: 1 }, 3.1);
 
   const movieStart = 3.0;                     // the white dot appears: the movie begins
