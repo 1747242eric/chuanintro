@@ -28,39 +28,45 @@
       overflow-x: hidden;
       background: #fff;
     }
-    #master-spacer { height: 2100vh; width: 100%; }
+    #master-spacer { height: 3000vh; width: 100%; }
     #scroll-hint {
-      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-      z-index: 70;
+      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+      z-index: 15;
       color: rgba(255,255,255,0.3);
-      font-size: 0.88rem;
+      font-size: 0.8rem;
       letter-spacing: 0.3em;
       text-transform: uppercase;
       pointer-events: none;
+      transition: opacity 0.2s;
     }
     #scroll-hint span {
-      display: block; margin: 11px auto 0;
-      width: 22px; height: 33px;
+      display: block; margin: 10px auto 0;
+      width: 20px; height: 30px;
       border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 11px;
+      border-radius: 10px;
       position: relative;
     }
     #scroll-hint span::after {
       content: '';
-      position: absolute; top: 7px; left: 50%;
+      position: absolute; top: 6px; left: 50%;
       transform: translateX(-50%);
-      width: 3px; height: 9px;
+      width: 3px; height: 8px;
       background: rgba(255,255,255,0.5);
       border-radius: 2px;
       animation: scrollDot 2s ease-in-out infinite;
     }
     @keyframes scrollDot {
-      0% { top: 20px; opacity: 1; }
-      100% { top: 7px; opacity: 0; }
+      0% { top: 6px; opacity: 1; }
+      100% { top: 18px; opacity: 0; }
     }
-    #scroll-hint.dark { color: rgba(0,0,0,0.35); }
-    #scroll-hint.dark span { border-color: rgba(0,0,0,0.35); }
-    #scroll-hint.dark span::after { background: rgba(0,0,0,0.55); }
+    #scroll-hint.reappear { animation: hintReappear 0.7s ease-out; }
+    @keyframes hintReappear {
+      0% { opacity: 0; }
+      25% { opacity: 1; }
+      50% { opacity: 0; }
+      75% { opacity: 1; }
+      100% { opacity: 1; }
+    }
     #phase-intro {
       position: fixed; inset: 0; z-index: 10;
       background: #000;
@@ -292,6 +298,10 @@ window.addEventListener('load', () => {
   const words2 = splitLine(document.getElementById('line-2'));
   const words3 = splitLine(document.getElementById('line-3'));
 
+  // Scroll icon: blink once when it fades back in on return (starts false so
+  // first load shows it quietly; blink only on return from a hidden state)
+  let hintWasHidden = false;
+
   // ─── MASTER TIMELINE ───
   const master = gsap.timeline({
     scrollTrigger: {
@@ -300,7 +310,18 @@ window.addEventListener('load', () => {
       end: 'bottom bottom',
       scrub: 2.0,
       invalidateOnRefresh: true,
-      onUpdate: (self) => {}
+      onUpdate: (self) => {
+        if (scrollHint) {
+          const hidden = self.progress > 0.08;
+          scrollHint.style.opacity = hidden ? '0' : String(1 - (self.progress / 0.08));
+          if (!hidden && hintWasHidden) {
+            scrollHint.classList.remove('reappear');
+            void scrollHint.offsetWidth;   // restart the blink
+            scrollHint.classList.add('reappear');
+          }
+          hintWasHidden = hidden;
+        }
+      }
     }
   });
 
@@ -356,20 +377,10 @@ window.addEventListener('load', () => {
   master.set(phaseCircle, { opacity: 0 }, 4.8);
 
   // ── 3. LOGO (ORIGINAL ENTRANCE — NEW EXIT) ──
-  master.set(phaseFly, { opacity: 1, background: '#fff' }, 4.0);
-  master.set(flyLogo, { opacity: 0, scale: 35, rotation: 5, filter: 'grayscale(0)', y: -35 }, 4.05);
-
-  // Fly-in entrance (unchanged)
-  master.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, 4.1);
-  master.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 1.4, ease: 'power2.inOut' }, 4.15);
-
-  // Audio triggers (unchanged)
-  master.call(() => { if (flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.6; flyAudio.play().catch(() => {}); } }, [], 4.15);
-  master.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], 5.55);
-  master.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], 5.55);
-
-  // Logo holds, then 0.15s beat before spin
-  master.set(flyLogo, { opacity: 1 }, 5.8);
+  master.set(phaseFly, { opacity: 1, background: '#fff' }, 3.85); // white ready the moment the dot takes over (movie starts here)
+  // ── The logo entrance is now THE MOVIE (see below): a locked, time-based
+  //    sequence from the white takeover to the logo parked. Master resumes at
+  //    the spin. Sounds live ONLY in the movie.
   master.to(flyLogo, { rotationY: 810, duration: 0.45, ease: 'power3.out' }, 6.0);
   master.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 6.45);
   master.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 6.6);
@@ -400,19 +411,6 @@ window.addEventListener('load', () => {
   const line3End = line3Start + 0.15 + (words3.length * 0.06) + 0.15;
   const fadeStart = line3End + 0.2;
 
-  // ── 4.5 SCROLL HINT — ON/OFF THROUGHOUT ──
-  function hintPulse(start) {
-    master.to(scrollHint, { opacity: 0, duration: 0.2, ease: 'power1.inOut' }, start);
-    master.to(scrollHint, { opacity: 1, duration: 0.25, ease: 'power1.inOut' }, start + 0.7);
-  }
-  hintPulse(1.6);
-  hintPulse(3.4);
-  hintPulse(5.0);
-  master.call(() => scrollHint.classList.add('dark'), [], 6.75);
-  hintPulse(7.9);
-  hintPulse(line2End - 0.4);
-  hintPulse(line3End - 0.3);
-
   master.to('#line-1', { backgroundImage: 'linear-gradient(to right, #ffffff 50%, #ffffff 50%)', duration: 0.6, ease: 'power1.inOut' }, fadeStart);
   master.to(allWords, { color: '#ffffff', duration: 0.6, ease: 'power1.inOut' }, fadeStart);
 
@@ -423,6 +421,40 @@ window.addEventListener('load', () => {
       window.location.href = 'https://ericchuan.com';
     }, 1200);
   }, [], fadeStart);
+
+  // ─────────────────────────────────────────────────────────────
+  //  THE MOVIE — once the white dot has taken over the screen, this
+  //  plays on its own. No scrub, no stop, no rewind until the logo
+  //  parks with the boom. Sound lives here, synced to the frames.
+  // ─────────────────────────────────────────────────────────────
+  const movie = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
+
+  movie.set(flyLogo, { opacity: 0, scale: 35, rotation: 5, filter: 'grayscale(0)', y: -35 }, 0.05);
+  movie.call(() => { if (flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.6; flyAudio.play().catch(() => {}); } }, [], 0.1);
+  movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, 0.1);
+  movie.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 1.4, ease: 'power2.inOut' }, 0.15);
+  movie.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], 1.55);
+  movie.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], 1.55);
+  movie.set(flyLogo, { opacity: 1 }, 1.8);
+
+  const irisEnd = 3.85;                       // iris wipe completes: white dot owns the screen
+  const irisFrac = irisEnd / fadeStart;       // its position as a fraction of the master timeline
+  let movieState = 'idle';                    // idle → playing → done (plays exactly once)
+  movie.eventCallback('onComplete', () => { movieState = 'done'; });
+
+  // Fire + lock live on the TIMELINE, not on ScrollTrigger: a ScrollTrigger
+  // caches its onUpdate at construction, so swapping vars.onUpdate later is
+  // silently ignored. Timeline onUpdate + progress() are core GSAP — they run
+  // on every scrub tick, guaranteed.
+  master.eventCallback('onUpdate', () => {
+    if (movieState === 'idle' && master.progress() >= irisFrac) {
+      movieState = 'playing';
+      movie.play();
+    }
+    if (movieState === 'playing' && master.progress() > irisFrac) {
+      master.progress(irisFrac);              // locked: cannot scrub past until the logo parks
+    }
+  });
 
   window.addEventListener('resize', ScrollTrigger.refresh);
   console.log('✅ Done');
