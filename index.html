@@ -31,7 +31,7 @@
     #master-spacer { height: 3000vh; width: 100%; }
     #scroll-hint {
       position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
-      z-index: 60;   /* above the white phase-fly (30) + mission (50): visible after the movie */
+      z-index: 15;
       color: rgba(255,255,255,0.3);
       font-size: 0.8rem;
       letter-spacing: 0.3em;
@@ -68,16 +68,15 @@
       100% { opacity: 1; }
     }
     /* AFTER THE MOVIE: the logo is about to spin away — the scroll icon comes
-       back as a GHOSTED medium-gray scroll, gently breathing. Never fades
-       below ~60%, so it reads as a quiet pulse, not a hard blink. */
+       back, blinking slowly, in dark (the phase is white by then). */
     #scroll-hint.after-movie {
-      color: rgba(130,130,130,0.5);
-      animation: hintSlowBlink 3.5s ease-in-out infinite;
+      color: rgba(0,0,0,0.35);
+      animation: hintSlowBlink 2.6s ease-in-out infinite;
     }
-    #scroll-hint.after-movie span { border-color: rgba(130,130,130,0.5); }
-    #scroll-hint.after-movie span::after { background: rgba(130,130,130,0.6); }
+    #scroll-hint.after-movie span { border-color: rgba(0,0,0,0.35); }
+    #scroll-hint.after-movie span::after { background: rgba(0,0,0,0.5); }
     @keyframes hintSlowBlink {
-      0%, 100% { opacity: 0.6; }
+      0%, 100% { opacity: 0.35; }
       50% { opacity: 1; }
     }
     #phase-intro {
@@ -397,20 +396,14 @@ window.addEventListener('load', () => {
   });
 
   // ── 2. WHITE DOT (ORIGINAL TIMING) ──
-  // ── 2. THE R'S SKY → THE PAPER (NO CIRCLE) ──
-  // The black the hellos sit on IS the R's sky; the white sweep is THE
-  // MOVIE's job. The master only HOLDS the white from 3.05 (just past the
-  // movieStart clamp) so a forward scrub after the park never re-renders the
-  // sweep. NO fromTo, NO circle — the dot is gone for good.
+  master.set(phaseCircle, { opacity: 1 }, 3.0);
+  master.set(iris, { scale: 1, opacity: 1 }, 3.0);
+  master.fromTo(iris, { scale: 1, opacity: 1 }, { scale: 250, opacity: 1, duration: 0.57, ease: 'power2.inOut' }, 3.05);
+  master.set(phaseCircle, { opacity: 0 }, 4.8);
 
   // ── 3. LOGO (ORIGINAL ENTRANCE — NEW EXIT) ──
-  // NO master set on phaseFly at 3.0: CSS defaults #phase-fly to opacity 0,
-  // and a master SET here would re-render on every scroll tick while the
-  // movie plays (the clamp pins the master at 3.0) — FIGHTING the movie's
-  // white sweep on the same element and killing it. The movie owns the
-  // takeover; the master only HOLDS the white from 3.05 (no fromTo — it
-  // snapped the white off on forward scrub after park).
-  master.set(phaseFly, { opacity: 1, background: '#fff' }, 3.05);
+  master.set(phaseFly, { opacity: 0 }, 3.0);   // explicit hidden anchor (rewind-safe)
+  master.fromTo(phaseFly, { opacity: 0 }, { opacity: 1, background: '#fff' }, 3.62); // white after the dot covers the screen
   // ── The logo entrance is now THE MOVIE (see below): a locked, time-based
   //    sequence from the white takeover to the logo parked. Master resumes at
   //    the spin. Sounds live ONLY in the movie.
@@ -467,36 +460,34 @@ window.addEventListener('load', () => {
   // starts (the dot zoom gives the audio room to start). fly-by.mp3 = 3.24s;
   // the fly through is dragged out slow (2.25s) so the whoosh plays out FULLY
   // and ends before the park — a flying headquarter, not a jet.
-  // THE PAPER SWEEP — no circle (Eric: "we may want to skip the circle").
-  // The black the hellos sit on IS the R's sky (the skyline's sky inside the
-  // R of the logo); the takeover is the WHITE paper sweeping in over it.
-  // Expansion length is my call; Eric's indication is RELATIVE: the sound
-  // comes in 0.31s BEFORE the takeover. The white sweeps for 0.57s
-  // (0.05 → 0.62) and completes its takeover at 0.62.
-  const takeover = 0.62;                 // the white covers the whole screen
-  const soundIn = takeover - 0.31;       // Eric: sound 0.31s BEFORE the takeover
+  // THE WHITE DOT — expansion length is my call; Eric's indication is RELATIVE:
+  // the sound comes in 0.31s BEFORE the dot takes over the screen. The dot
+  // expands for 0.57s (0.05 → 0.62) and completes its takeover at 0.62.
+  const dotTakeover = 0.62;              // the dot covers the whole screen
+  const soundIn = dotTakeover - 0.31;    // Eric: sound 0.31s BEFORE the takeover
 
-  movie.set(phaseFly, { opacity: 0, background: '#fff' }, 0);
-  movie.to(phaseFly, { opacity: 1, background: '#fff', duration: 0.57, ease: 'power2.inOut' }, 0.05);
+  movie.set(phaseCircle, { opacity: 1 }, 0);
+  movie.set(iris, { scale: 1, opacity: 1 }, 0);
+  movie.to(iris, { scale: 250, opacity: 1, duration: 0.57, ease: 'power2.inOut' }, 0.05);
 
-  // the SOUND is cued 0.31s before the takeover — the white is still
-  // sweeping, almost covering the screen. The FULL 3.24s whoosh plays from
-  // here; it ends at 3.55, before the landing. NO trimming (Eric's call):
-  // the sequence is timed around the sound.
+  // the SOUND is cued 0.31s before the takeover — the dot is still expanding,
+  // almost covering the screen. The FULL 3.24s whoosh plays from here; it ends
+  // at 3.55, before the landing. NO trimming (Eric's call): the sequence is
+  // timed around the sound.
   movie.call(() => { if (movieState === 'playing' && flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.42; flyAudio.play().catch(() => {}); } }, [], soundIn);
 
-  // the white completes its takeover — the entire screen is white (no sound
-  // of its own; the whoosh is already swelling) — and the logo PASSES the
-  // camera, showing in the ALL-WHITE background (Eric: "once the entire
+  // the white dot completes its takeover — the entire screen is white (no
+  // sound of its own; the whoosh is already swelling) — and the logo PASSES
+  // the camera, showing in the ALL-WHITE background (Eric: "once the entire
   // screen is white thats when the logo comes in").
-  movie.set(phaseFly, { opacity: 1, background: '#fff' }, takeover);
-  movie.set(flyLogo, { opacity: 0, scale: 35, rotation: 5, filter: 'grayscale(0)', y: -35 }, takeover);
-  movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, takeover);
+  movie.set(phaseFly, { opacity: 1, background: '#fff' }, dotTakeover);
+  movie.set(flyLogo, { opacity: 0, scale: 35, rotation: 5, filter: 'grayscale(0)', y: -35 }, dotTakeover);
+  movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, dotTakeover);
 
   // the logo HOLDS the camera-close scale (35) for 0.31s after the pass —
   // Eric: "0.31 later getting closer, at another 0.31 the body of the logo
   // is shrinking" — the shrink starts at 0.93 (0.62 + 0.31).
-  const shrinkStart = takeover + 0.31;   // 0.93: the logo body starts shrinking
+  const shrinkStart = dotTakeover + 0.31;   // 0.93: the logo body starts shrinking
 
   // 0.93: as the logo body shrinks, the sound fades lower with it (receding
   // feel) — volume 0.42 → 0.1 over the same 2.17s, ending at the park.
@@ -523,60 +514,30 @@ window.addEventListener('load', () => {
   // silently ignored. Timeline onUpdate + progress() are core GSAP — they run
   // on every scrub tick, guaranteed.
   let lastP = 0;                              // for detecting rewind direction
-  let mirrored = false;                       // the rewind gesture has scrubbed the movie zone
   master.eventCallback('onUpdate', () => {
     const p = master.progress();
     const rewinding = p < lastP;
     lastP = p;
-    if (rewinding && movieState === 'playing') {
-      // Eric: reverse = the rewind gesture — NO sound. The sequence unwinds
-      // back to the last bit of Bonjour (before the dots); keep dialing back
-      // and it goes all the way to the beginning (HELLO). Abort the
-      // time-based movie; the mirror below takes over the visuals.
-      movieState = 'done';
-      movie.pause();
-      movie.progress(0);
-      if (flyAudio) flyAudio.pause();
-      if (boomAudio) boomAudio.pause();
-    }
     if (movieState === 'idle' && p >= irisFrac) {
       movieState = 'playing';
       movie.play();
-    } else if (movieState === 'done' && p < parkFrac && (rewinding || mirrored)) {
-      // in the movie zone after the movie: the visuals FOLLOW THE SCRUB both
-      // ways (mirror on rewind, re-fly on forward). Rendered MANUALLY here —
-      // the master only HOLDS end states, so nothing re-renders forward.
-      // Eric's rewind (msg 24979): the logo flies back to behind the camera
-      // (grows + fades), the white returns to black, and only the SMALL dot
-      // shows — the big dot never shrinks back ("gone for good").
+    } else if (movieState === 'done' && rewinding && p < parkFrac) {
+      // rewound into the movie zone: the logo mirrors back with the scrub
+      // (it must move again, not sit parked). The dot and white phase
+      // already reverse via the master's fromTo tweens.
       const mapped = Math.max(0, (p - irisFrac) / (parkFrac - irisFrac));
       gsap.set(flyLogo, { scale: 35 + (0.8 - 35) * mapped, rotation: 5 * (1 - mapped), y: -35, opacity: mapped });
-      gsap.set(phaseFly, { opacity: mapped, background: '#fff' });   // white → the R-sky black
-      mirrored = true;
       if (p < irisFrac) {
         // fully rewound past the movie's start: reset so the next
         // scroll-forward replays the sequence fresh (logo + dot + boom)
         movieState = 'idle';
         movie.pause();
         movie.progress(0);
-        mirrored = false;
-        gsap.set(phaseFly, { opacity: 0 });   // back to the R-sky black
+        gsap.set(phaseCircle, { opacity: 0 });
+        gsap.set(iris, { scale: 1, opacity: 0 });
+        gsap.set(phaseFly, { opacity: 0 });
         gsap.set(flyLogo, { opacity: 0, scale: 35, rotation: 5, y: -35 });
-      } else if (p <= irisFrac + 0.001) {
-        // rewound to the paper-start ("stop there"): the movie is idle +
-        // reset, so scrolling forward replays it with sound. The R-sky black
-        // stays (the master's 3.0 set renders it).
-        movieState = 'idle';
-        movie.pause();
-        movie.progress(0);
-        mirrored = false;
       }
-    } else if (movieState === 'done' && !rewinding && p >= parkFrac) {
-      // scrolled forward out of the movie zone: restore the PARKED logo (the
-      // mirror left it mid-flight) so the spin/fold/mission continue cleanly.
-      mirrored = false;
-      gsap.set(flyLogo, { scale: 0.8, rotation: 0, y: -35, opacity: 1 });
-      gsap.set(phaseFly, { opacity: 1, background: '#fff' });
     }
     if (movieState === 'playing' && p > irisFrac) {
       master.progress(irisFrac);              // locked: cannot scrub past until the logo parks
