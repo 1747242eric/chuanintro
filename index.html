@@ -33,74 +33,35 @@
       width: 100%;
     }
 
-    /* ── WHITE SCROLL HINT (briefly on black intro) ── */
-    #scroll-hint-white {
+    /* ── SCROLL HINTS (temporary) ── */
+    .scroll-hint {
       position: fixed;
       bottom: 40px;
       left: 50%;
       transform: translateX(-50%);
+      font-size: 0.8rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
       z-index: 12;
-      color: rgba(255, 255, 255, 0.4);
-      font-size: 0.8rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      pointer-events: none;
-      opacity: 0;
     }
-    #scroll-hint-white span {
+    .scroll-hint span {
       display: block;
       margin: 10px auto 0;
       width: 20px;
       height: 30px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 10px;
       position: relative;
     }
-    #scroll-hint-white span::after {
+    .scroll-hint span::after {
       content: '';
       position: absolute;
-      top: 18px;
       left: 50%;
       transform: translateX(-50%);
       width: 3px;
       height: 8px;
-      background: rgba(255, 255, 255, 0.5);
-      border-radius: 2px;
-      animation: scrollDotReverse 2s ease-in-out infinite;
-    }
-
-    /* ── GRAY SCROLL HINT (briefly after boom) ── */
-    #scroll-hint-gray {
-      position: fixed;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 14;
-      color: rgba(80, 80, 80, 0.5);
-      font-size: 0.8rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      pointer-events: none;
-      opacity: 0;
-    }
-    #scroll-hint-gray span {
-      display: block;
-      margin: 10px auto 0;
-      width: 20px;
-      height: 30px;
-      border: 2px solid rgba(80, 80, 80, 0.35);
-      border-radius: 10px;
-      position: relative;
-    }
-    #scroll-hint-gray span::after {
-      content: '';
-      position: absolute;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 3px;
-      height: 8px;
-      background: rgba(80, 80, 80, 0.6);
       border-radius: 2px;
       animation: scrollDotReverse 2s ease-in-out infinite;
     }
@@ -110,7 +71,29 @@
       100% { top: 6px; opacity: 0; }
     }
 
-    /* ── INTRO PHASES ── */
+    /* White version (on black intro) */
+    #scroll-hint-white {
+      color: #fff;
+    }
+    #scroll-hint-white span {
+      border: 2px solid rgba(255,255,255,0.6);
+    }
+    #scroll-hint-white span::after {
+      background: #fff;
+    }
+
+    /* Gray version (after boom) */
+    #scroll-hint-gray {
+      color: #444;
+    }
+    #scroll-hint-gray span {
+      border: 2px solid rgba(0,0,0,0.3);
+    }
+    #scroll-hint-gray span::after {
+      background: #444;
+    }
+
+    /* ── INTRO PHASES (unchanged) ── */
     #phase-intro {
       position: fixed; inset: 0; z-index: 10;
       background: #000;
@@ -217,24 +200,18 @@
       .mission-line { font-size: 2rem; line-height: 1.2; margin-bottom: 0.8rem; }
       #mission-container { padding: 20px 0 0 15px; }
       .text-wrapper { max-width: 100%; }
-      #scroll-hint-white, #scroll-hint-gray {
-        font-size: 0.6rem; bottom: 28px;
-      }
-      #scroll-hint-white span, #scroll-hint-gray span {
-        width: 16px; height: 24px; margin-top: 6px;
-      }
-      #scroll-hint-white span::after, #scroll-hint-gray span::after {
-        height: 6px; width: 2px;
-      }
+      .scroll-hint { font-size: 0.6rem; bottom: 28px; }
+      .scroll-hint span { width: 16px; height: 24px; margin-top: 6px; }
+      .scroll-hint span::after { height: 6px; width: 2px; }
     }
   </style>
 </head>
 <body>
   <div id="master-spacer"></div>
 
-  <!-- Only two scroll hints – nothing more -->
-  <div id="scroll-hint-white">scroll <span></span></div>
-  <div id="scroll-hint-gray">scroll <span></span></div>
+  <!-- Two temporary scroll hints -->
+  <div id="scroll-hint-white" class="scroll-hint">scroll <span></span></div>
+  <div id="scroll-hint-gray" class="scroll-hint">scroll <span></span></div>
 
   <div id="phase-intro">
     <span class="word">Hello</span>
@@ -388,16 +365,16 @@
         setTimeout(() => { window.location.href = 'https://ericchuan.com'; }, 1200);
       }, [], fadeStart);
 
-      // ── SCROLL HINT APPEARANCES (brief, non‑permanent) ──
-      // White on black intro: 1.8s → 2.8s
+      // ── SCROLL HINT APPEARANCES ──
+      // White: visible from 1.5s to 4.0s
       master.set(scrollHintWhite, { opacity: 0 }, 0);
-      master.to(scrollHintWhite, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.8);
-      master.to(scrollHintWhite, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 2.8);
+      master.to(scrollHintWhite, { opacity: 1, duration: 0.4, ease: 'power1.out' }, 1.5);
+      master.to(scrollHintWhite, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 4.0);
 
-      // Gray after boom: 6.6s → 6.9s
+      // Gray: visible from 6.5s to 7.2s
       master.set(scrollHintGray, { opacity: 0 }, 0);
-      master.to(scrollHintGray, { opacity: 1, duration: 0.2, ease: 'power1.out' }, 6.6);
-      master.to(scrollHintGray, { opacity: 0, duration: 0.3, ease: 'power1.in' }, 6.9);
+      master.to(scrollHintGray, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 6.5);
+      master.to(scrollHintGray, { opacity: 0, duration: 0.3, ease: 'power1.in' }, 7.2);
 
       // ── MOVIE (logo fly‑in + boom) ──
       const movie = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
