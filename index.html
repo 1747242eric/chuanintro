@@ -370,10 +370,11 @@
       master.to(scrollHintWhite, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.8);
       master.to(scrollHintWhite, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 2.8);
 
-      // Gray after logo parks: 6.8s – 8.0s
+      // Gray after logo boom arrives: lower-center, over the mission layer.
+      // It stays present through the remainder of the page, matching the
+      // scroll hint's existing appearance everywhere else.
       master.set(scrollHintGray, { opacity: 0 }, 0);
       master.to(scrollHintGray, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 6.8);
-      master.to(scrollHintGray, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 8.0);
 
       // ── MOVIE (logo fly‑in + boom) ──
       const movie = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
