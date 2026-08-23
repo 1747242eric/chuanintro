@@ -33,7 +33,7 @@
       width: 100%;
     }
 
-    /* ── SCROLL HINTS (temporary) ── */
+    /* ── SCROLL HINTS (temporary only) ── */
     .scroll-hint {
       position: fixed;
       bottom: 40px;
@@ -62,7 +62,6 @@
       width: 3px;
       height: 8px;
       border-radius: 2px;
-      /* REVERSED: dot moves upward */
       animation: scrollDotReverse 2s ease-in-out infinite;
     }
 
@@ -82,9 +81,9 @@
       background: rgba(255,255,255,0.4);
     }
 
-    /* Gray version – now on top (z-index 60) and darker for visibility */
+    /* Gray version – 30% black, z-index 60, clearly visible */
     #scroll-hint-gray {
-      z-index: 60; /* above mission container (50) and phase-fly (30) */
+      z-index: 60;
       color: rgba(0,0,0,0.3);
     }
     #scroll-hint-gray span {
@@ -209,7 +208,7 @@
 <body>
   <div id="master-spacer"></div>
 
-  <!-- Two temporary scroll hints – no permanent one -->
+  <!-- Only two temporary hints – no permanent one -->
   <div id="scroll-hint-white" class="scroll-hint">scroll <span></span></div>
   <div id="scroll-hint-gray" class="scroll-hint">scroll <span></span></div>
 
@@ -371,8 +370,7 @@
       master.to(scrollHintWhite, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.8);
       master.to(scrollHintWhite, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 2.8);
 
-      // Gray on white after logo is parked (phase-fly hidden at 6.75)
-      // Appears at 6.8s and fades out at 8.0s
+      // Gray after logo parks: 6.8s – 8.0s
       master.set(scrollHintGray, { opacity: 0 }, 0);
       master.to(scrollHintGray, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 6.8);
       master.to(scrollHintGray, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 8.0);
