@@ -28,10 +28,14 @@
       overflow-x: hidden;
       background: #fff;
     }
-    #master-spacer { height: 500vh; width: 100%; }   // 4 screens: greeting, fly-through, spin, mission — steps out, not compressed (Eric 25243)
+    #master-spacer { height: 1300vh; width: 100%; }   /* was 2400vh — the spin sat ~6.3
+                                                   screens down (Eric 25143: "too many
+                                                   scroll to the spin"); at 1300vh the
+                                                   spin is ~3.4 screens, the movie fires
+                                                   at ~3.3 */
     #scroll-hint {
       position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
-      z-index: 40;   // above the white fly phase (30) — the after-movie "scroll" blink must be VISIBLE on white (was 15 = behind it, invisible)
+      z-index: 60;   /* above the white phase-fly (30) + mission (50): visible after the movie */
       color: rgba(255,255,255,0.3);
       font-size: 0.8rem;
       letter-spacing: 0.3em;
@@ -68,15 +72,16 @@
       100% { opacity: 1; }
     }
     /* AFTER THE MOVIE: the logo is about to spin away — the scroll icon comes
-       back, blinking slowly, in dark (the phase is white by then). */
+       back as a GHOSTED medium-gray scroll, gently breathing. Never fades
+       below ~60%, so it reads as a quiet pulse, not a hard blink. */
     #scroll-hint.after-movie {
-      color: rgba(0,0,0,0.35);
-      animation: hintSlowBlink 2.6s ease-in-out infinite;
+      color: rgba(130,130,130,0.5);
+      animation: hintSlowBlink 3.5s ease-in-out infinite;
     }
-    #scroll-hint.after-movie span { border-color: rgba(0,0,0,0.35); }
-    #scroll-hint.after-movie span::after { background: rgba(0,0,0,0.5); }
+    #scroll-hint.after-movie span { border-color: rgba(130,130,130,0.5); }
+    #scroll-hint.after-movie span::after { background: rgba(130,130,130,0.6); }
     @keyframes hintSlowBlink {
-      0%, 100% { opacity: 0.35; }
+      0%, 100% { opacity: 0.6; }
       50% { opacity: 1; }
     }
     #phase-intro {
@@ -109,6 +114,7 @@
       will-change: transform, opacity;
       transform-origin: center bottom;
     }
+    /* circles removed (Eric msg 25062: no circle anywhere) */
     #phase-fly {
       position: fixed; inset: 0; z-index: 30;
       background: #fff;
@@ -117,6 +123,16 @@
       justify-content: center;
       pointer-events: none;
       opacity: 0;
+      perspective: 800px;
+    }
+    #fly-stage {
+      position: fixed; inset: 0; z-index: 31;   /* above the white paper (30):
+                                                   the logo flies ON TOP of the
+                                                   white, not hidden inside it */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
       perspective: 800px;
     }
     #fly-logo {
@@ -205,7 +221,9 @@
   <span class="word bonjour">Bonjour</span>
 </div>
 
-<div id="phase-fly">
+
+<div id="phase-fly"></div>
+<div id="fly-stage">
   <img id="fly-logo" src="assets/my Logo.svg" alt="Eric Chuan">
 </div>
 
@@ -228,16 +246,6 @@
 gsap.registerPlugin(ScrollTrigger);
 
 window.addEventListener('load', () => {
-  // Reloads must start at the top: scroll restoration dropped the user
-  // mid-timeline (hellos mid-flight, the logo frozen mid-spin and flipped,
-  // the movie yanking the page back). Every load = a fresh run from 0.
-  if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
-  const html = document.documentElement;
-  const prevScrollBehavior = html.style.scrollBehavior;
-  html.style.scrollBehavior = 'auto';   // jump, don't glide, to the top
-  window.scrollTo(0, 0);
-  html.style.scrollBehavior = prevScrollBehavior;
-
   // ── Split greetings into letters ──
   const wordElements = document.querySelectorAll('.word');
   const wordData = [];
@@ -313,7 +321,7 @@ window.addEventListener('load', () => {
       trigger: '#master-spacer',
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 0.8,   // was 2.0 — the catch-up lag felt like a delay (Eric 25280)
+      scrub: 2.0,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
         if (scrollHint) {
@@ -341,14 +349,9 @@ window.addEventListener('load', () => {
     }
   });
 
-  // ── 1. GREETINGS — the ONLY changes are the 2 knobs (Eric 25298/25353):
-  //    gap 0.32→0.5, unfoldDur 0.35→0.5 (slower — the fast "quick step" is
-  //    NOT Eric's speed). Everything else stays exactly as the live site:
-  //    the dimensional side entrance (fromX ±900, rotateY ±75, scaleX 0.1,
-  //    skewX 12), decayStart 0.25, decayDur 0.45. Only addition: the Bonjour
-  //    shrink (Eric 25296). ──
-  const gap = 0.5;
-  const unfoldDur = 0.5;
+  // ── 1. GREETINGS (ORIGINAL TIMING) ──
+  const gap = 0.32;
+  const unfoldDur = 0.35;
   const decayStart = 0.25;
   const decayDur = 0.45;
 
@@ -380,50 +383,65 @@ window.addEventListener('load', () => {
       ease: 'power3.out'
     }, startTime);
 
-    master.to(letters, {
-      y: 140,
-      rotation: 35,
-      x: (idx) => (idx % 2 === 0 ? 50 : -50),
-      scale: el.classList.contains('bonjour') ? 0.4 : 1,   // ONLY Bonjour shrinks as it falls (Eric 25296); the rest fall as on the live site
-      opacity: 0,
-      stagger: 0.025,
-      duration: decayDur,
-      ease: 'power2.in'
-    }, startTime + decayStart);
+    // Bonjour (the LAST hello) never decays IN THE MASTER — it stays full-size
+    // in the R-sky so the MOVIE can decay + shrink it to nothing as the logo
+    // takes over (Eric: the decay is part of the movie, not the scroll).
+    if (i < wordData.length - 1) {
+      master.to(letters, {
+        y: 140,
+        rotation: 35,
+        x: (idx) => (idx % 2 === 0 ? 50 : -50),
+        opacity: 0,
+        stagger: 0.025,
+        duration: decayDur,
+        ease: 'power2.in'
+      }, startTime + decayStart);
+    }
   });
 
-  // ── 2. NO CIRCLE (removed, Eric 25194: "get rid of the circle"). The
-  //    takeover is the white paper sweep alone — the movie owns it.
+  // ── 2. WHITE DOT (ORIGINAL TIMING) ──
+  // ── 2. THE R'S SKY → THE PAPER (NO CIRCLE) ──
+  // The black the hellos sit on IS the R's sky; the white sweep is THE
+  // MOVIE's job. The master only HOLDS the white from 3.05 (just past the
+  // movieStart clamp) so a forward scrub after the park never re-renders the
+  // sweep. NO fromTo, NO circle — the dot is gone for good.
 
   // ── 3. LOGO (ORIGINAL ENTRANCE — NEW EXIT) ──
-  // The master only HOLDS the white from 4.85 (the movie swept it at the
-  // black moment); a fromTo here would re-sweep the paper on a forward scrub
-  // after the movie.
-  master.set(phaseFly, { opacity: 1, background: '#fff' }, 4.85);   // the fly phase appears AT the black moment: Bonjour's LAST letter is fully gone at 4.85 (fall 4.25 + stagger 0.025×6 + 0.45). At 4.7 the tail was still falling (55% opacity) — the takeover would have covered it. (was 3.05 — that hid the last hellos entirely)
+  // NO master set on phaseFly at 3.0: CSS defaults #phase-fly to opacity 0,
+  // and a master SET here would re-render on every scroll tick while the
+  // movie plays (the clamp pins the master at 3.0) — FIGHTING the movie's
+  // white sweep on the same element and killing it. The movie owns the
+  // takeover; the master only HOLDS the white from 3.05 (no fromTo — it
+  // snapped the white off on forward scrub after park).
+  master.set(phaseFly, { opacity: 1, background: '#fff' }, 3.05);
   // ── The logo entrance is now THE MOVIE (see below): a locked, time-based
   //    sequence from the white takeover to the logo parked. Master resumes at
   //    the spin. Sounds live ONLY in the movie.
-  master.to(flyLogo, { rotationY: 810, duration: 3.0, ease: 'power3.out' }, 4.9);   // spin right after the park (was 5.0; Eric 25380: scroll comes AFTER the spin) — slower than all previous (Eric 25271: rum1 is 2x the old fly); 810° = 2.25 rounds (Eric 25296)
-  master.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.8, ease: 'power3.in' }, 7.9);
-  master.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.8, ease: 'power2.in' }, 8.7);
+  // Eric: "cut down of amount of scroll to the spinning" — the spin starts
+  // RIGHT after the park (3.10 = park + 0.10). No more dead zone between the
+  // movie and the spin; the whole post-movie block sits tight (spin 3.10,
+  // fold 3.55/3.70, mission 3.85) and the mission reveal fills the tail.
+  master.to(flyLogo, { rotationY: 720, duration: 0.45, ease: 'power3.out' }, 3.10);   // 720 = two full flips, parks FLAT (810 ended 90deg edge-on = the "flipped" park, Eric 25158)
+  master.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 3.55);
+  master.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 3.70);
 
   // ── 4. MISSION — appears as logo finishes ──
-  master.set(missionContainer, { opacity: 1, y: '0%' }, 9.6);
-  master.set(phaseFly, { opacity: 0 }, 9.6);
+  master.set(missionContainer, { opacity: 1, y: '0%' }, 3.85);
+  master.set(phaseFly, { opacity: 0 }, 3.85);
 
-  master.set('#line-2, #line-3', { y: '100%', opacity: 0 }, 9.6);
-  master.set('#line-1', { y: '750%', opacity: 0 }, 9.6);
+  master.set('#line-2, #line-3', { y: '100%', opacity: 0 }, 3.85);
+  master.set('#line-1', { y: '750%', opacity: 0 }, 3.85);
 
   // Line 1 appears fast during rise — gradient begins at park
-  master.to('#line-1', { opacity: 1, duration: 0.35, ease: 'power1.out' }, 9.6);
-  master.to('#line-1', { y: '0%', duration: 1.0, ease: 'power2.out' }, 9.6);
-  master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.6, ease: 'power1.inOut' }, 10.45);
+  master.to('#line-1', { opacity: 1, duration: 0.35, ease: 'power1.out' }, 3.85);
+  master.to('#line-1', { y: '0%', duration: 1.0, ease: 'power2.out' }, 3.85);
+  master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.6, ease: 'power1.inOut' }, 4.70);
 
   // Line 2 appears as last words of line 1 turn black
-  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 10.85);
-  master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 11.0);
+  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 5.10);
+  master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 5.25);
 
-  const line2End = 11.0 + (words2.length * 0.06) + 0.15;   // mission re-anchored to the live greeting base; spin/fold longer than the live 0.45s snap
+  const line2End = 5.25 + (words2.length * 0.06) + 0.15;   // shifted with the block (-3.2)
   const line3Start = line2End + 0.1;
   master.to('#line-3', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, line3Start);
   master.to(words3, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, line3Start + 0.15);
@@ -445,69 +463,101 @@ window.addEventListener('load', () => {
   }, [], fadeStart);
 
   // ─────────────────────────────────────────────────────────────
-  //  THE MOVIE — once Bonjour disappears (the black moment), this
+  //  THE MOVIE — once the white dot has taken over the screen, this
   //  plays on its own. No scrub, no stop, no rewind until the logo
   //  parks with the boom. Sound lives here, synced to the frames.
   // ─────────────────────────────────────────────────────────────
   let movieState = 'idle';                    // idle → playing → done (plays exactly once)
   const movie = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
 
-  // t=0: Bonjour is gone — the black moment. The sound starts and the logo
-  // passes at scale 35 — the skyline fills the frame (the skyline in the logo
-  // IS the scene, Eric 25414 — the XL SVG he sent is in the build). ONE unit
-  // at ONE speed (Eric 25380: "same speed not part faster than another part").
-  // rum2 IS IN the build (verified 02:56: 7.05s, mean -15.1 dB, louder than
-  // the boosted rum1; its own boom at 2.98-3.02s). The logo HITS THE WALL at
-  // the park and the boom lands with it. NO trimming (Eric's call): timed
-  // around the sound.
-  const dotTakeover = 0;                 // the takeover begins at t=0
-  const soundIn = dotTakeover;           // sound AT the black moment (Eric 25263)
+  // NO CIRCLES (Eric: "take the little white circle and large white circle
+  // away"). The black the hellos sit on IS the R's sky (the skyline's sky
+  // inside the R of the logo). Bonjour — the last hello — never decays IN THE
+  // MASTER (scroll): its decay is part of the MOVIE — it DECAYS (opacity → 0)
+  // AND SHRINKS (scale → 0) to nothing together in the takeover window
+  // (0.05 → 0.62; Eric msg 25075: "bonjour still decays, its part of the
+  // movie, decaying and shrinking to nothing").
+  // At Bonjour's ~65% shrink (0.70) the logo comes in; the fly-in sound cues
+  // 0.3s BEFORE that (Eric: "before logo come in 0.3 second cue the fly in").
+  // The white paper flips in at 0.62 — Bonjour is gone, the screen becomes
+  // the white the logo flies against. The boom lands at 4.20, synced to the
+  // park — the fade out ENDS with the boom, the logo lands (Eric 25121).
+  const bonjourEl = wordData[wordData.length - 1].el;  // the last hello: Bonjour
+  const bonjourLetters = wordData[wordData.length - 1].letters;
+  const takeover = 1.10;                 // Bonjour is gone; the white takes over
+  const logoIn = 0.70;                   // AFTER the crumble — the logo flies in
+                                         // (Eric 25140: "keep the bonjour like the
+                                         // previously crumbles, then let the logo fly in")
+  const soundIn = logoIn - 0.3;          // Eric: fly-in sound 0.3s BEFORE the logo (0.40)
+  const shrinkStart = 1.15;              // the logo body starts shrinking in place
+  const boomAt = 3.50;                   // msg 25147: octave-down rumbled — rebuilt at 0.6,
+  // pitch stays whooshy (5.07s); Eric (msg 25123 + 25124 "stretch the pitch
+  // and the file size together"): fly-by.mp3 = his 3.056s fly slowed 2x the
+  // NATURAL way (asetrate 44100*0.5 + aresample) → 6.06s, pitch one octave
+  // down, heavier pass (big ship), fade ends ~3.5. The FADE OUT ENDS WITH
+  // THE BOOM (msg 25121) — the boom lands as the fade completes, the logo
+  // parks. Descent 1.15 → 3.50 = 2.35s.
 
-  // The movie owns the whole takeover: the white paper, the sound AT the
-  // black, the logo at the takeover, the descent, and the boom. No circle
-  // anywhere (Eric 25296).
+  movie.set(phaseFly, { opacity: 0, background: '#fff' }, 0);
+  movie.set(bonjourLetters, { opacity: 1, y: 0, rotation: 0, x: 0 }, 0);   // rewind-safe anchor
+  // Bonjour CRUMBLES like the other hellos (the exact decay tween: letters
+  // fall + scatter + fade, Eric 25140: "keep the bonjour like the previously
+  // crumbles"). 0.05 + 0.45s + stagger 0.025×6 → gone by ~0.65.
+  movie.to(bonjourLetters, { y: 140, rotation: 35, x: (idx) => (idx % 2 === 0 ? 50 : -50), opacity: 0, stagger: 0.025, duration: 0.45, ease: 'power2.in' }, 0.05);
 
-  // the SOUND enters AT the takeover — the screen is the logo's black sky.
-  // rum2 = rumble that swells to its loudest (2.1-2.5s) and ENDS with the
-  // boom at 2.98s (Eric 25425: "the boom hits toward the end of the rumble").
-  // The audio is CUT right after the boom (3.05) — the spin is SILENCE
-  // (Eric 25426). The sound's own shape is untouched (Eric's call).
-  movie.call(() => { if (movieState === 'playing' && flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.8; flyAudio.play().catch(() => {}); } }, [], soundIn);
+  // the SOUND is cued 0.3s before the logo comes in — the low rumble plays
+  // under the crumble ("flew close by you"). The FULL fly plays from here
+  // (0.03) — Eric's fly slowed 2x the NATURAL way (asetrate 44100*0.5 +
+  // aresample, msg 25124 "stretch the pitch and the file size together"):
+  // 5.07s, pitch gently down (asetrate 0.6 — NOT a full octave: that read as
+  // a background rumble, Eric 25147), loud pass ~2s, fade ends ~3.5. NO
+  // trimming (Eric's call): the sequence is timed around the sound. The fade
+  // out ends WITH the boom (3.50) — the logo lands as the fade completes (Eric 25121;
+  // no dead air 25107, no trailing 25116).
+  movie.call(() => { if (movieState === 'playing' && flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 1.0; flyAudio.play().catch(() => {}); } }, [], soundIn);
 
-  // the takeover completes — the entire screen is the logo's dark sky — and
-  // the logo PASSES the camera (Eric: "once the entire screen is white thats
-  // when the logo comes in"; here the sky IS the logo, Eric 25251).
-  movie.set(phaseFly, { opacity: 1, background: '#fff' }, dotTakeover);
-  // The logo lands at FULL opacity the instant the takeover hits: the old
-  // 0.08s fade-in left a white flash (the paper showing through the
-  // transparent logo) before the logo's dark covered the screen. Now the
-  // intro's black hands off straight to the logo's own black — seamless.
-  movie.set(flyLogo, { opacity: 1, scale: 35, rotation: 0, filter: 'grayscale(0)', y: -35 }, dotTakeover);
+  // Bonjour just CRUMBLED away (like the other hellos) — the logo PASSES the
+  // camera (scale 35, filling the screen) over the dark. The logo is on its
+  // OWN layer (#fly-stage, above the white) — the pass is VISIBLE, not hidden
+  // inside the invisible white div (that was the "white circle from nowhere").
+  movie.set(flyLogo, { opacity: 0, scale: 35, rotation: 5, filter: 'grayscale(0)', y: -35 }, logoIn);
+  movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, logoIn);
 
-  // the logo HOLDS the camera-close scale (35) for 0.31s after the pass —
-  // Eric: "0.31 later getting closer..." — the shrink starts at 0.31.
-  const shrinkStart = dotTakeover + 0.31;   // 0.31: the logo body starts shrinking
+  // Bonjour is gone — the white paper FADES in over 0.35s (Eric 25136: "at
+  // least it used to come from a small dot" — the white needs an ORIGIN, not
+  // a snap from nowhere; the fade comes out of the dark). The logo HOLDS the
+  // camera-close until 1.15.
+  movie.to(phaseFly, { opacity: 1, background: '#fff', duration: 0.35, ease: 'power1.inOut' }, takeover);
 
-  // THE FLY THROUGH — the body shrinks 0.31 → 2.98 (2.67s) as it flies to
-  // the wall: scale 35 → 0.8, landing EXACTLY at the boom, which hits at the
-  // END of the rumble (Eric 25425: "the boom hits toward the end of the
-  // rumble"). UNIFORM speed (Eric 25380: no part faster than another).
-  movie.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 2.67, ease: 'none' }, shrinkStart);   // UNIFORM speed (Eric 25380: no part faster than another)
+  // 1.15: the logo body shrinks IN PLACE and flies to the park (Eric: "the
+  // rest is shrinking in place and park"). As it shrinks, the sound fades
+  // lower with it (receding feel) — volume 1.0 → 0.1 over the same run,
+  // ending at the park. The whoosh's tail overlaps the landing a little —
+  // fine: the park is so loud the fading swoosh is masked.
+  movie.to(flyAudio, { volume: 0.25, duration: boomAt - shrinkStart, ease: 'power1.inOut' }, shrinkStart);
+  movie.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: boomAt - shrinkStart, ease: 'power2.inOut' }, shrinkStart);
 
-  // the logo parks WITH the boom — rum2's OWN impact at 2.98-3.02s (0.0 dB;
-  // the boom is built into the sound, Eric 25427 "logo park with a boom", so
-  // boom.mp3 is no longer layered). Then the audio is CUT at 3.05: the rumble
-  // tail (3.2-6.5s) is never heard — NO rumble reaches the spin (Eric 25425),
-  // the spin plays in SILENCE (Eric 25426).
-  movie.set(flyLogo, { opacity: 1 }, 2.98);
-  movie.call(() => { if (movieState === 'playing' && flyAudio) { flyAudio.pause(); } }, [], 3.05);
+  // the boom lands at the PARK (3.50 — the fade out ends WITH the boom,
+  // the logo lands; Eric 25121). Guarded by movieState so
+  // a backward scrub render can never re-fire the audio.
+  movie.call(() => { if (movieState === 'playing' && boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], boomAt);
+  movie.set(flyLogo, { opacity: 1 }, boomAt);
 
-  const movieStart = 4.85;                    // the black moment: Bonjour is FULLY gone — last word starts 4.0, arrives 4.5, falls 4.25, last letter (stagger 0.025) ends 4.85 (was 4.7 — the tail was still falling). The sky + skyline move in NOW (Eric 25380)
+  const movieStart = 3.0;                     // the movie begins (master time)
   const irisFrac = movieStart / fadeStart;    // its position as a fraction of the master timeline
-  parkFrac = (movieStart + 0.1) / fadeStart;  // park right after the movie (was +3.1 = ~8 screens of dead scroll to the spin, Eric 25177)
+  parkFrac = (movieStart + 0.10) / fadeStart;  // mirror zone ends at the SPIN (3.10): the
+  // park is right there — no dead scroll forward, instant walk-back on
+  // rewind, and the scroll icon returns at the spin (it was MIA until the
+  // old parkFrac = 0.50, i.e. 5+ screens past the movie)
   movie.eventCallback('onComplete', () => {
     movieState = 'done';
-    document.body.style.overflow = '';   // unlock — the spin waits for the user (Eric 25380: scroll comes AFTER the spin)
+    // If the scroll ran ahead during the locked movie, snap back to the park
+    // (master 3.0 = the parked logo) so the spin/fold/mission start cleanly
+    // from the park — no mid-sequence jump/flash on the first scroll.
+    const st = master.scrollTrigger;
+    if (st && st.progress > parkFrac) {
+      st.scroll(st.start + (movieStart / fadeStart) * (st.end - st.start));
+    }
   });
 
   // Fire + lock live on the TIMELINE, not on ScrollTrigger: a ScrollTrigger
@@ -515,55 +565,76 @@ window.addEventListener('load', () => {
   // silently ignored. Timeline onUpdate + progress() are core GSAP — they run
   // on every scrub tick, guaranteed.
   let lastP = 0;                              // for detecting rewind direction
-  let mirrored = false;                       // a rewind has scrubbed the movie zone
+  let mirrored = false;                       // the rewind gesture has scrubbed the movie zone
+  let clamping = false;                       // true while the movie-zone lock yanks the master back
   master.eventCallback('onUpdate', () => {
     const p = master.progress();
     const rewinding = p < lastP;
     lastP = p;
+    // CRITICAL: the clamp below calls master.progress(irisFrac) INSIDE this
+    // onUpdate — real GSAP re-fires onUpdate for that render with a LOWER p,
+    // which reads as a rewind. Without the guard the movie is aborted the
+    // instant it starts (Bonjour flashes + freezes, no white, no sound).
+    // Only a USER rewind (clamping false) may abort the movie.
+    if (rewinding && movieState === 'playing' && !clamping) {
+      // Eric: reverse = the rewind gesture — NO sound. The sequence unwinds
+      // back to the last bit of Bonjour (before the dots); keep dialing back
+      // and it goes all the way to the beginning (HELLO). Abort the
+      // time-based movie; the mirror below takes over the visuals.
+      movieState = 'done';
+      movie.pause();
+      movie.progress(0);
+      if (flyAudio) flyAudio.pause();
+      if (boomAudio) boomAudio.pause();
+    }
     if (movieState === 'idle' && p >= irisFrac) {
       movieState = 'playing';
-      // Lock the page during the movie: it is time-based and un-scrubbable
-      // ("no scrub, no stop, no rewind until the logo parks"). Without this,
-      // wheel input during the 2.98s banks up and releases after the park —
-      // the logo jumps positions and the spin fast-forwards.
-      document.body.style.overflow = 'hidden';
       movie.play();
     } else if (movieState === 'done' && p < parkFrac && (rewinding || mirrored)) {
-      // rewound into the movie zone: the logo mirrors back with the scrub
-      // and re-flies forward after a rewind (it must move again, not sit
-      // parked); the white phase follows. rotationY/rotationX pinned to 0 so
-      // a stale spin angle can never make the fly-in show the logo's back
-      // (the "flipped logo" bug — Eric 25207).
+      // in the movie zone after the movie: the visuals FOLLOW THE SCRUB both
+      // ways (mirror on rewind, re-fly on forward). Rendered MANUALLY here —
+      // the master only HOLDS end states, so nothing re-renders forward.
+      // Eric's rewind (msg 24979): the logo flies back to behind the camera
+      // (grows + fades), the white returns to black, and only the SMALL dot
+      // shows — the big dot never shrinks back ("gone for good").
       const mapped = Math.max(0, (p - irisFrac) / (parkFrac - irisFrac));
-      gsap.set(flyLogo, { rotationY: 0, rotationX: 0, scale: 35 + (0.8 - 35) * mapped, rotation: 0, y: -35, opacity: mapped });
-      gsap.set(phaseFly, { opacity: mapped, background: '#fff' });   // the white recedes with the rewind
+      gsap.set(flyLogo, { scale: 35 + (0.8 - 35) * mapped, rotation: 5 * (1 - mapped), y: -35, opacity: mapped });
+      gsap.set(phaseFly, { opacity: mapped, background: '#fff' });   // white → the R-sky black
       mirrored = true;
       if (p < irisFrac) {
         // fully rewound past the movie's start: reset so the next
-        // scroll-forward replays the sequence fresh (logo + boom)
+        // scroll-forward replays the sequence fresh (logo + dot + boom)
         movieState = 'idle';
         movie.pause();
         movie.progress(0);
         mirrored = false;
-        gsap.set(phaseFly, { opacity: 0 });
-        gsap.set(flyLogo, { rotationY: 0, rotationX: 0, opacity: 0, scale: 35, rotation: 0, y: -35 });
+        gsap.set(phaseFly, { opacity: 0 });   // back to the R-sky black
+        gsap.set(flyLogo, { opacity: 0, scale: 35, rotation: 5, y: -35 });
+      } else if (p <= irisFrac + 0.001) {
+        // rewound to the paper-start ("stop there"): the movie is idle +
+        // reset, so scrolling forward replays it with sound. The R-sky black
+        // stays (the master's 3.0 set renders it).
+        movieState = 'idle';
+        movie.pause();
+        movie.progress(0);
+        mirrored = false;
       }
-    } else if (movieState === 'done' && mirrored && !rewinding && p >= parkFrac) {
-      // scrolled forward out of the movie zone AFTER A REWIND: restore the
-      // PARKED logo (the mirror left it mid-flight) so the spin continues
-      // cleanly from the park, not from the air. rotationY pinned to 0 so
-      // the spin always starts face-forward. Requires mirrored: without it
-      // this fired EVERY forward tick and gsap.set(rotationY: 0) overrode
-      // the spin tween after each render — the 810° spin never showed.
+    } else if (movieState === 'done' && !rewinding && p >= parkFrac) {
+      // scrolled forward out of the movie zone: restore the PARKED logo (the
+      // mirror left it mid-flight) so the spin/fold/mission continue cleanly.
       mirrored = false;
-      gsap.set(flyLogo, { rotationY: 0, rotationX: 0, scale: 0.8, rotation: 0, y: -35, opacity: 1 });
+      gsap.set(flyLogo, { scale: 0.8, rotation: 0, y: -35, opacity: 1 });
       gsap.set(phaseFly, { opacity: 1, background: '#fff' });
     }
     if (movieState === 'playing' && p > irisFrac) {
-      master.progress(irisFrac);              // locked: cannot scrub past until the logo parks
-      // ALSO pin the scrollbar to the park: scrub smoothing would otherwise
-      // creep the master into the spin (3.30) while the logo is still coming
-      // down (the "spins during the descent" bug).
+      clamping = true;                        // lock: cannot scrub past until the logo parks
+      master.progress(irisFrac);
+      clamping = false;
+      // ALSO pin the SCROLLBAR to the park while the movie plays: with scrub
+      // smoothing the master would otherwise creep into the spin zone (3.10)
+      // and render the spin while the logo is still coming down (Eric 25159).
+      // Pinning the scroll keeps the smoothed progress at the park — the spin
+      // can only fire after the movie is done and the logo has landed.
       const st = master.scrollTrigger;
       if (st && st.progress > irisFrac) {
         st.scroll(st.start + irisFrac * (st.end - st.start));
