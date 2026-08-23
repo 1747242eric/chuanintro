@@ -370,11 +370,8 @@
       master.to(scrollHintWhite, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.8);
       master.to(scrollHintWhite, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 2.8);
 
-      // Gray after logo boom arrives: lower-center, over the mission layer.
-      // It stays present through the remainder of the page, matching the
-      // scroll hint's existing appearance everywhere else.
+      // Gray scroll hint is timed to the actual logo landing/boom, not the master scroll timeline.
       master.set(scrollHintGray, { opacity: 0 }, 0);
-      master.to(scrollHintGray, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 6.8);
 
       // ── MOVIE (logo fly‑in + boom) ──
       const movie = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
@@ -385,6 +382,8 @@
       movie.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], 1.55);
       movie.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], 1.55);
       movie.set(flyLogo, { opacity: 1 }, 1.8);
+      // Show the scroll hint immediately after the logo has landed following the boom.
+      movie.to(scrollHintGray, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.8);
 
       const irisEnd = 3.85;
       const irisFrac = irisEnd / fadeStart;
