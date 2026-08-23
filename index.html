@@ -110,21 +110,7 @@
       will-change: transform, opacity;
       transform-origin: center bottom;
     }
-    #phase-circle {
-      position: fixed; inset: 0; z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      opacity: 0;
-    }
-    #iris-circle {
-      width: 0.5vmin;
-      height: 0.5vmin;
-      background: #fff;
-      border-radius: 50%;
-      will-change: transform;
-    }
+    /* circles removed (Eric msg 25062: no circle anywhere) */
     #phase-fly {
       position: fixed; inset: 0; z-index: 30;
       background: #fff;
@@ -133,6 +119,16 @@
       justify-content: center;
       pointer-events: none;
       opacity: 0;
+      perspective: 800px;
+    }
+    #fly-stage {
+      position: fixed; inset: 0; z-index: 31;   /* above the white paper (30):
+                                                   the logo flies ON TOP of the
+                                                   white, not hidden inside it */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
       perspective: 800px;
     }
     #fly-logo {
@@ -221,9 +217,9 @@
   <span class="word bonjour">Bonjour</span>
 </div>
 
-<div id="phase-circle"><div id="iris-circle"></div></div>
 
-<div id="phase-fly">
+<div id="phase-fly"></div>
+<div id="fly-stage">
   <img id="fly-logo" src="assets/my Logo.svg" alt="Eric Chuan">
 </div>
 
@@ -263,8 +259,6 @@ window.addEventListener('load', () => {
   });
 
   // ── Elements ──
-  const iris = document.querySelector('#iris-circle');
-  const phaseCircle = document.querySelector('#phase-circle');
   const flyLogo = document.querySelector('#fly-logo');
   const phaseFly = document.querySelector('#phase-fly');
   const missionContainer = document.getElementById('mission-container');
@@ -479,16 +473,18 @@ window.addEventListener('load', () => {
   // AND SHRINKS (scale → 0) to nothing together in the takeover window
   // (0.05 → 0.62; Eric msg 25075: "bonjour still decays, its part of the
   // movie, decaying and shrinking to nothing").
-  // At Bonjour's HALF size (~0.33) the logo comes in; the fly-in sound cues
+  // At Bonjour's ~65% shrink (0.70) the logo comes in; the fly-in sound cues
   // 0.3s BEFORE that (Eric: "before logo come in 0.3 second cue the fly in").
   // The white paper flips in at 0.62 — Bonjour is gone, the screen becomes
   // the white the logo flies against. The boom lands at 4.20, synced to the
   // park — the fade out ENDS with the boom, the logo lands (Eric 25121).
   const bonjourEl = wordData[wordData.length - 1].el;  // the last hello: Bonjour
-  const takeover = 0.62;                 // Bonjour is gone; the white takes over
-  const logoIn = 0.33;                   // Bonjour ~half size: the logo comes in
-  const soundIn = logoIn - 0.3;          // Eric: fly-in sound 0.3s BEFORE the logo
-  const shrinkStart = 0.93;              // the logo body starts shrinking in place
+  const takeover = 1.15;                 // Bonjour is gone; the white takes over
+  const logoIn = 0.70;                   // Bonjour ~65% shrunk (VISIBLE shrink first —
+                                         // Eric 25138: bonjour must get small BEFORE the
+                                         // white comes; no more "static then white circle")
+  const soundIn = logoIn - 0.3;          // Eric: fly-in sound 0.3s BEFORE the logo (0.40)
+  const shrinkStart = 1.20;              // the logo body starts shrinking in place
   const boomAt = 4.20;                   // Eric (msg 25123 + 25124 "stretch the pitch
   // and the file size together"): fly-by.mp3 = his 3.056s fly slowed 2x the
   // NATURAL way (asetrate 44100*0.5 + aresample) → 6.06s, pitch one octave
@@ -498,7 +494,7 @@ window.addEventListener('load', () => {
 
   movie.set(phaseFly, { opacity: 0, background: '#fff' }, 0);
   movie.set(bonjourEl, { opacity: 1, scale: 1 }, 0);   // rewind-safe anchor
-  movie.to(bonjourEl, { scale: 0, opacity: 0, duration: 0.57, ease: 'power1.inOut' }, 0.05);   // DECAY + shrink to nothing (Eric 25075: "bonjour still decays, its part of the movie")
+  movie.to(bonjourEl, { scale: 0, opacity: 0, duration: 1.05, ease: 'power1.inOut' }, 0.05);   // SLOW + VISIBLE shrink 0.05→1.10 (Eric 25138: bonjour looked static — the shrink must be SEEN before the logo/white cover it)
 
   // the SOUND is cued 0.3s before the logo comes in — the low rumble plays
   // under the shrink ("flew close by you"). The FULL fly plays from here
@@ -510,17 +506,21 @@ window.addEventListener('load', () => {
   // no dead air 25107, no trailing 25116).
   movie.call(() => { if (movieState === 'playing' && flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.72; flyAudio.play().catch(() => {}); } }, [], soundIn);
 
-  // Bonjour is at HALF size — the logo PASSES the camera (scale 35, filling
-  // the screen) while Bonjour finishes shrinking behind it.
+  // Bonjour is ~65% shrunk (visibly smaller — the shrink was SEEN) — the
+  // logo PASSES the camera (scale 35, filling the screen) while Bonjour
+  // finishes shrinking behind it. The logo is on its OWN layer (#fly-stage,
+  // above the white) — the pass is VISIBLE over the dark, not hidden inside
+  // the invisible white div (that was the "white circle from nowhere").
   movie.set(flyLogo, { opacity: 0, scale: 35, rotation: 5, filter: 'grayscale(0)', y: -35 }, logoIn);
   movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, logoIn);
 
-  // Bonjour is gone — the white paper flips in: the whole screen becomes the
-  // white the logo flies against (the R-sky is behind us; we broke the border
-  // plane). The logo HOLDS the camera-close until 0.93.
-  movie.set(phaseFly, { opacity: 1, background: '#fff' }, takeover);
+  // Bonjour is gone — the white paper FADES in over 0.35s (Eric 25136: "at
+  // least it used to come from a small dot" — the white needs an ORIGIN, not
+  // a snap from nowhere; the fade comes out of the dark). The logo HOLDS the
+  // camera-close until 1.20.
+  movie.to(phaseFly, { opacity: 1, background: '#fff', duration: 0.35, ease: 'power1.inOut' }, takeover);
 
-  // 0.93: the logo body shrinks IN PLACE and flies to the park (Eric: "the
+  // 1.20: the logo body shrinks IN PLACE and flies to the park (Eric: "the
   // rest is shrinking in place and park"). As it shrinks, the sound fades
   // lower with it (receding feel) — volume 0.42 → 0.1 over the same run,
   // ending at the park. The whoosh's tail overlaps the landing a little —
@@ -540,7 +540,16 @@ window.addEventListener('load', () => {
   // park is right there — no dead scroll forward, instant walk-back on
   // rewind, and the scroll icon returns at the spin (it was MIA until the
   // old parkFrac = 0.50, i.e. 5+ screens past the movie)
-  movie.eventCallback('onComplete', () => { movieState = 'done'; });
+  movie.eventCallback('onComplete', () => {
+    movieState = 'done';
+    // If the scroll ran ahead during the locked movie, snap back to the park
+    // (master 3.0 = the parked logo) so the spin/fold/mission start cleanly
+    // from the park — no mid-sequence jump/flash on the first scroll.
+    const st = master.scrollTrigger;
+    if (st && st.progress > parkFrac) {
+      st.scroll(st.start + (movieStart / fadeStart) * (st.end - st.start));
+    }
+  });
 
   // Fire + lock live on the TIMELINE, not on ScrollTrigger: a ScrollTrigger
   // caches its onUpdate at construction, so swapping vars.onUpdate later is
