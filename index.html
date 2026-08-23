@@ -228,6 +228,16 @@
 gsap.registerPlugin(ScrollTrigger);
 
 window.addEventListener('load', () => {
+  // Reloads must start at the top: scroll restoration dropped the user
+  // mid-timeline (hellos mid-flight, the logo frozen mid-spin and flipped,
+  // the movie yanking the page back). Every load = a fresh run from 0.
+  if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+  const html = document.documentElement;
+  const prevScrollBehavior = html.style.scrollBehavior;
+  html.style.scrollBehavior = 'auto';   // jump, don't glide, to the top
+  window.scrollTo(0, 0);
+  html.style.scrollBehavior = prevScrollBehavior;
+
   // ── Split greetings into letters ──
   const wordElements = document.querySelectorAll('.word');
   const wordData = [];
@@ -331,14 +341,12 @@ window.addEventListener('load', () => {
     }
   });
 
-  // ── 1. GREETINGS — the ONLY changes are the 2 knobs (Eric 25298/25353):
-  //    gap 0.32→0.5, unfoldDur 0.35→0.5 (slower — the fast "quick step" is
-  //    NOT Eric's speed). Everything else stays exactly as the live site:
-  //    the dimensional side entrance (fromX ±900, rotateY ±75, scaleX 0.1,
-  //    skewX 12), decayStart 0.25, decayDur 0.45. Only addition: the Bonjour
-  //    shrink (Eric 25296). ──
-  const gap = 0.5;
-  const unfoldDur = 0.5;
+  // ── 1. GREETINGS (ORIGINAL TIMING — RESTORED VERBATIM, Eric 25457) ──
+  //    gap 0.32, unfoldDur 0.35, the dimensional side entrance (fromX ±900,
+  //    rotateY ±75, scaleX 0.1, skewX 12), decayStart 0.25, decayDur 0.45.
+  //    NO Bonjour shrink — this is exactly the live hello, untouched.
+  const gap = 0.32;
+  const unfoldDur = 0.35;
   const decayStart = 0.25;
   const decayDur = 0.45;
 
@@ -374,7 +382,6 @@ window.addEventListener('load', () => {
       y: 140,
       rotation: 35,
       x: (idx) => (idx % 2 === 0 ? 50 : -50),
-      scale: el.classList.contains('bonjour') ? 0.4 : 1,   // ONLY Bonjour shrinks as it falls (Eric 25296); the rest fall as on the live site
       opacity: 0,
       stagger: 0.025,
       duration: decayDur,
@@ -386,34 +393,34 @@ window.addEventListener('load', () => {
   //    takeover is the white paper sweep alone — the movie owns it.
 
   // ── 3. LOGO (ORIGINAL ENTRANCE — NEW EXIT) ──
-  // The master only HOLDS the white from 4.85 (the movie swept it at the
+  // The master only HOLDS the white from 3.41 (the movie swept it at the
   // black moment); a fromTo here would re-sweep the paper on a forward scrub
   // after the movie.
-  master.set(phaseFly, { opacity: 1, background: '#fff' }, 4.85);   // the fly phase appears AT the black moment: Bonjour's LAST letter is fully gone at 4.85 (fall 4.25 + stagger 0.025×6 + 0.45). At 4.7 the tail was still falling (55% opacity) — the takeover would have covered it. (was 3.05 — that hid the last hellos entirely)
+  master.set(phaseFly, { opacity: 1, background: '#fff' }, 3.41);   // the fly phase appears AT the black moment: Bonjour's LAST letter is fully gone at 3.41 (fall 2.81 + stagger 0.025×6 + 0.45), original greeting timing
   // ── The logo entrance is now THE MOVIE (see below): a locked, time-based
   //    sequence from the white takeover to the logo parked. Master resumes at
   //    the spin. Sounds live ONLY in the movie.
-  master.to(flyLogo, { rotationY: 810, duration: 3.0, ease: 'power3.out' }, 4.9);   // spin right after the park (was 5.0; Eric 25380: scroll comes AFTER the spin) — slower than all previous (Eric 25271: rum1 is 2x the old fly); 810° = 2.25 rounds (Eric 25296)
-  master.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.8, ease: 'power3.in' }, 7.9);
-  master.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.8, ease: 'power2.in' }, 8.7);
+  master.to(flyLogo, { rotationY: 810, duration: 3.0, ease: 'power3.out' }, 3.46);   // spin right after the park (movieStart + 0.05; Eric 25380: scroll comes AFTER the spin); 810° = 2.25 rounds (Eric 25296)
+  master.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.8, ease: 'power3.in' }, 6.46);   // fold starts the moment the spin ends
+  master.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.8, ease: 'power2.in' }, 7.26);
 
   // ── 4. MISSION — appears as logo finishes ──
-  master.set(missionContainer, { opacity: 1, y: '0%' }, 9.6);
-  master.set(phaseFly, { opacity: 0 }, 9.6);
+  master.set(missionContainer, { opacity: 1, y: '0%' }, 8.16);
+  master.set(phaseFly, { opacity: 0 }, 8.16);
 
-  master.set('#line-2, #line-3', { y: '100%', opacity: 0 }, 9.6);
-  master.set('#line-1', { y: '750%', opacity: 0 }, 9.6);
+  master.set('#line-2, #line-3', { y: '100%', opacity: 0 }, 8.16);
+  master.set('#line-1', { y: '750%', opacity: 0 }, 8.16);
 
   // Line 1 appears fast during rise — gradient begins at park
-  master.to('#line-1', { opacity: 1, duration: 0.35, ease: 'power1.out' }, 9.6);
-  master.to('#line-1', { y: '0%', duration: 1.0, ease: 'power2.out' }, 9.6);
-  master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.6, ease: 'power1.inOut' }, 10.45);
+  master.to('#line-1', { opacity: 1, duration: 0.35, ease: 'power1.out' }, 8.16);
+  master.to('#line-1', { y: '0%', duration: 1.0, ease: 'power2.out' }, 8.16);
+  master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.6, ease: 'power1.inOut' }, 9.01);
 
   // Line 2 appears as last words of line 1 turn black
-  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 10.85);
-  master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 11.0);
+  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 9.41);
+  master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 9.56);
 
-  const line2End = 11.0 + (words2.length * 0.06) + 0.15;   // mission re-anchored to the live greeting base; spin/fold longer than the live 0.45s snap
+  const line2End = 9.56 + (words2.length * 0.06) + 0.15;   // mission block shifted with the greeting (mission 8.16 → line2 words 9.56)
   const line3Start = line2End + 0.1;
   master.to('#line-3', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, line3Start);
   master.to(words3, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, line3Start + 0.15);
@@ -468,8 +475,11 @@ window.addEventListener('load', () => {
   // the logo PASSES the camera (Eric: "once the entire screen is white thats
   // when the logo comes in"; here the sky IS the logo, Eric 25251).
   movie.set(phaseFly, { opacity: 1, background: '#fff' }, dotTakeover);
-  movie.set(flyLogo, { opacity: 0, scale: 35, rotation: 5, filter: 'grayscale(0)', y: -35 }, dotTakeover);
-  movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, dotTakeover);
+  // The logo lands at FULL opacity the instant the takeover hits: the old
+  // 0.08s fade-in left a white flash (the paper showing through the
+  // transparent logo) before the logo's dark covered the screen. Now the
+  // intro's black hands off straight to the logo's own black — seamless.
+  movie.set(flyLogo, { opacity: 1, scale: 35, rotation: 5, filter: 'grayscale(0)', y: -35 }, dotTakeover);
 
   // the logo HOLDS the camera-close scale (35) for 0.31s after the pass —
   // Eric: "0.31 later getting closer..." — the shrink starts at 0.31.
@@ -489,10 +499,13 @@ window.addEventListener('load', () => {
   movie.set(flyLogo, { opacity: 1 }, 2.98);
   movie.call(() => { if (movieState === 'playing' && flyAudio) { flyAudio.pause(); } }, [], 3.05);
 
-  const movieStart = 4.85;                    // the black moment: Bonjour is FULLY gone — last word starts 4.0, arrives 4.5, falls 4.25, last letter (stagger 0.025) ends 4.85 (was 4.7 — the tail was still falling). The sky + skyline move in NOW (Eric 25380)
+  const movieStart = 3.41;                    // the black moment (ORIGINAL greeting timing): Bonjour starts 2.56, falls 2.81, last letter (stagger 0.025) ends 3.41 — FULLY gone. The sky + skyline move in NOW (Eric 25380)
   const irisFrac = movieStart / fadeStart;    // its position as a fraction of the master timeline
   parkFrac = (movieStart + 0.1) / fadeStart;  // park right after the movie (was +3.1 = ~8 screens of dead scroll to the spin, Eric 25177)
-  movie.eventCallback('onComplete', () => { movieState = 'done'; });
+  movie.eventCallback('onComplete', () => {
+    movieState = 'done';
+    document.body.style.overflow = '';   // unlock — the spin waits for the user (Eric 25380: scroll comes AFTER the spin)
+  });
 
   // Fire + lock live on the TIMELINE, not on ScrollTrigger: a ScrollTrigger
   // caches its onUpdate at construction, so swapping vars.onUpdate later is
@@ -506,6 +519,11 @@ window.addEventListener('load', () => {
     lastP = p;
     if (movieState === 'idle' && p >= irisFrac) {
       movieState = 'playing';
+      // Lock the page during the movie: it is time-based and un-scrubbable
+      // ("no scrub, no stop, no rewind until the logo parks"). Without this,
+      // wheel input during the 2.98s banks up and releases after the park —
+      // the logo jumps positions and the spin fast-forwards.
+      document.body.style.overflow = 'hidden';
       movie.play();
     } else if (movieState === 'done' && p < parkFrac && (rewinding || mirrored)) {
       // rewound into the movie zone: the logo mirrors back with the scrub
