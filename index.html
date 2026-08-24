@@ -386,7 +386,6 @@ window.addEventListener('load', () => {
   master.to(scrollHint, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.8);
   master.to(scrollHint, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 2.8);
   master.set(scrollHintGray, { opacity: 0 }, 0);
-  master.to(scrollHintGray, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 5.8);
 
   // ── 2. WHITE DOT (ORIGINAL TIMING) ──
   master.set(phaseCircle, { opacity: 1 }, 3.0);
@@ -454,6 +453,7 @@ window.addEventListener('load', () => {
   movie.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], 1.55);
   movie.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], 1.55);
   movie.set(flyLogo, { opacity: 1 }, 1.8);
+  movie.to(scrollHintGray, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.8);
 
   const irisEnd = 3.85;                       // iris wipe completes: white dot owns the screen
   const irisFrac = irisEnd / fadeStart;       // its position as a fraction of the master timeline
