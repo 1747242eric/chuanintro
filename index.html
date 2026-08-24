@@ -241,161 +241,165 @@
   <audio id="fly-sound" preload="auto"><source src="assets/fly-by.mp3" type="audio/mpeg" /></audio>
   <audio id="boom-sound" preload="auto"><source src="assets/boom.mp3" type="audio/mpeg" /></audio>
 
-    <script>
+  <script>
     gsap.registerPlugin(ScrollTrigger);
 
-    window.addEventListener("DOMContentLoaded", () => {
-      // Audio nodes
-      const flySound = document.getElementById("fly-sound");
-      const boomSound = document.getElementById("boom-sound");
+    window.addEventListener('load', () => {
+      const wordElements = document.querySelectorAll('.word');
+      const wordData = [];
+      wordElements.forEach(el => {
+        const chars = Array.from(el.textContent.trim());
+        el.innerHTML = '';
+        const letters = chars.map(char => {
+          const span = document.createElement('span');
+          span.textContent = char === ' ' ? '\u00A0' : char;
+          span.className = 'letter';
+          el.appendChild(span);
+          return span;
+        });
+        wordData.push({ el, letters });
+      });
 
-      // Shared configuration variables
-      const words = gsap.utils.toArray(".word");
-      const totalWords = words.length;
+      const iris = document.querySelector('#iris-circle');
+      const phaseCircle = document.querySelector('#phase-circle');
+      const flyLogo = document.querySelector('#fly-logo');
+      const phaseFly = document.querySelector('#phase-fly');
+      const missionContainer = document.getElementById('mission-container');
+      const scrollHintWhite = document.querySelector('#scroll-hint-white');
+      const scrollHintGray = document.querySelector('#scroll-hint-gray');
+      const flyAudio = document.getElementById('fly-sound');
+      const boomAudio = document.getElementById('boom-sound');
 
-      // Master configuration timeline tied strictly to window scroll mechanics
-      const tl = gsap.timeline({
+      function unlockAudio() {
+        [flyAudio, boomAudio].forEach(audio => {
+          if (audio && audio.paused) {
+            audio.volume = 0;
+            audio.play().then(() => { audio.pause(); audio.currentTime = 0; audio.volume = 1; }).catch(() => {});
+          }
+        });
+        document.removeEventListener('scroll', unlockAudio);
+        document.removeEventListener('click', unlockAudio);
+      }
+      document.addEventListener('scroll', unlockAudio);
+      document.addEventListener('click', unlockAudio);
+
+      function splitLine(element) {
+        const text = element.textContent;
+        const parts = text.split(/(\s+)/).filter(p => p.length > 0);
+        element.innerHTML = '';
+        parts.forEach(p => {
+          if (p.trim() === '') {
+            element.appendChild(document.createTextNode(p));
+          } else {
+            const span = document.createElement('span');
+            span.className = 'word-highlight';
+            span.textContent = p;
+            element.appendChild(span);
+          }
+        });
+        return element.querySelectorAll('.word-highlight');
+      }
+
+      const words2 = splitLine(document.getElementById('line-2'));
+      const words3 = splitLine(document.getElementById('line-3'));
+
+      const master = gsap.timeline({
         scrollTrigger: {
-          trigger: "#master-spacer",
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 1.5,
+          trigger: '#master-spacer',
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 2.0,
           invalidateOnRefresh: true
         }
       });
 
-      // ── PHASE 1: SCROLL HINTS & WORD SEQUENCER ──
-      // Fade in the initial dark background hint at the absolute beginning
-      tl.to("#scroll-hint-white", { opacity: 1, duration: 0.1 }, 0)
-        .to("#scroll-hint-white", { opacity: 0, duration: 0.1 }, 0.8);
+      // ── GREETINGS ──
+      const gap = 0.32, unfoldDur = 0.35, decayStart = 0.25, decayDur = 0.45;
+      wordData.forEach((data, i) => {
+        const { el, letters } = data;
+        const startTime = i * gap;
+        const fromX = (i % 2 === 0) ? -900 : 900;
+        const fromRotateY = (i % 2 === 0) ? -75 : 75;
+        master.set(el, { xPercent: -50, yPercent: -50, x: fromX, y: 0, rotateY: fromRotateY, scaleX: 0.1, skewX: 12, opacity: 0 }, 0);
+        master.to(el, { x: 0, y: 0, rotateY: 0, scaleX: 1, skewX: 0, opacity: 1, duration: unfoldDur, ease: 'power3.out' }, startTime);
+        master.to(letters, { y: 140, rotation: 35, x: (idx) => (idx % 2 === 0 ? 50 : -50), opacity: 0, stagger: 0.025, duration: decayDur, ease: 'power2.in' }, startTime + decayStart);
+      });
 
-      // Distribute greetings equally across the early scroll phase
-      words.forEach((word, index) => {
-        const startPos = (index / totalWords) * 0.8;
-        const peakPos = startPos + (0.8 / totalWords) * 0.5;
-        const endPos = startPos + (0.8 / totalWords);
+      // ── WHITE DOT ──
+      master.set(phaseCircle, { opacity: 1 }, 3.0);
+      master.set(iris, { scale: 1, opacity: 1 }, 3.0);
+      master.to(iris, { scale: 250, duration: 0.8, ease: 'power2.inOut' }, 3.05);
+      master.set(phaseCircle, { opacity: 0 }, 4.8);
 
-        // Word scaling / fade interpolation sequence
-        tl.to(word, { opacity: 1, scale: 1.1, z: 1, duration: peakPos - startPos, ease: "power2.out" }, startPos)
-          .to(word, { opacity: 0, scale: 1.3, z: 10, duration: endPos - peakPos, ease: "power2.in" }, peakPos);
+      // ── LOGO FLY-IN ──
+      master.set(phaseFly, { opacity: 1, background: '#fff' }, 3.85);
+      master.to(flyLogo, { rotationY: 810, duration: 0.45, ease: 'power3.out' }, 6.0);
+      master.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 6.45);
+      master.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 6.6);
 
-        // Special behavior for the final greeting string (Bonjour)
-        if (index === totalWords - 1) {
-          const letters = word.querySelectorAll(".letter");
-          if (letters.length > 0) {
-            tl.to(letters, {
-              transformOrigin: "center bottom",
-              scaleY: 0.4,
-              yoyo: true,
-              repeat: 1,
-              duration: (endPos - peakPos) * 0.5,
-              stagger: 0.02,
-              ease: "power1.inOut"
-            }, peakPos);
-          }
+      // ── MISSION ──
+      master.set(missionContainer, { opacity: 1, y: '0%' }, 6.75);
+      master.set(phaseFly, { opacity: 0 }, 6.75);
+      master.set('#line-2, #line-3', { y: '100%', opacity: 0 }, 6.75);
+      master.set('#line-1', { y: '750%', opacity: 0 }, 6.75);
+      master.to('#line-1', { opacity: 1, duration: 0.35, ease: 'power1.out' }, 6.75);
+      master.to('#line-1', { y: '0%', duration: 1.0, ease: 'power2.out' }, 6.75);
+      master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.6, ease: 'power1.inOut' }, 7.6);
+      master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 8.0);
+      master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 8.15);
+      const line2End = 8.15 + (words2.length * 0.06) + 0.15;
+      const line3Start = line2End + 0.1;
+      master.to('#line-3', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, line3Start);
+      master.to(words3, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, line3Start + 0.15);
+
+      // ── FADE TO WHITE + REDIRECT ──
+      const allWords = [...words2, ...words3];
+      const line3End = line3Start + 0.15 + (words3.length * 0.06) + 0.15;
+      const fadeStart = line3End + 0.2;
+      master.to('#line-1', { backgroundImage: 'linear-gradient(to right, #ffffff 50%, #ffffff 50%)', duration: 0.6, ease: 'power1.inOut' }, fadeStart);
+      master.to(allWords, { color: '#ffffff', duration: 0.6, ease: 'power1.inOut' }, fadeStart);
+      master.call(() => {
+        document.body.style.transition = 'opacity 1s ease';
+        document.body.style.opacity = '0';
+        setTimeout(() => { window.location.href = 'https://ericchuan.com'; }, 1200);
+      }, [], fadeStart);
+
+      // ── SCROLL HINT APPEARANCES ──
+      // White on black intro: 1.8s – 2.8s
+      master.set(scrollHintWhite, { opacity: 0 }, 0);
+      master.to(scrollHintWhite, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.8);
+      master.to(scrollHintWhite, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 2.8);
+
+      // Gray after logo parks: 6.8s – 8.0s
+      master.set(scrollHintGray, { opacity: 0 }, 0);
+      master.to(scrollHintGray, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 6.8);
+      master.to(scrollHintGray, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 8.0);
+
+      // ── MOVIE (logo fly‑in + boom) ──
+      const movie = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
+      movie.set(flyLogo, { opacity: 0, scale: 35, rotation: 5, filter: 'grayscale(0)', y: -35 }, 0.05);
+      movie.call(() => { if (flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.6; flyAudio.play().catch(() => {}); } }, [], 0.1);
+      movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, 0.1);
+      movie.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 1.4, ease: 'power2.inOut' }, 0.15);
+      movie.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], 1.55);
+      movie.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], 1.55);
+      movie.set(flyLogo, { opacity: 1 }, 1.8);
+
+      const irisEnd = 3.85;
+      const irisFrac = irisEnd / fadeStart;
+      let movieState = 'idle';
+      movie.eventCallback('onComplete', () => { movieState = 'done'; });
+      master.eventCallback('onUpdate', () => {
+        if (movieState === 'idle' && master.progress() >= irisFrac) {
+          movieState = 'playing';
+          movie.play();
+        }
+        if (movieState === 'playing' && master.progress() > irisFrac) {
+          master.progress(irisFrac);
         }
       });
 
-      // ── PHASE 2: IRIS EXPANSION TRANSITION ──
-      tl.to("#phase-circle", { opacity: 1, duration: 0.05 }, 0.85)
-        .to("#iris-circle", {
-          scale: 4500,
-          duration: 0.15,
-          ease: "power3.inOut"
-        }, 0.85)
-        .to("#phase-intro", { display: "none", duration: 0 }, 0.95);
-
-      // ── PHASE 3: 3D LOGO FLY-BY & AUDIO ENGINE ──
-      tl.to("#phase-fly", { opacity: 1, duration: 0.02 }, 1.0)
-        .fromTo("#fly-logo", 
-          { opacity: 0, scale: 0.05, z: -1500, rotationX: 75, rotationY: -45, rotationZ: 20 },
-          { 
-            opacity: 1, 
-            scale: 1, 
-            z: 0, 
-            rotationX: 0, 
-            rotationY: 0, 
-            rotationZ: 0, 
-            duration: 0.25, 
-            ease: "power2.out",
-            onStart: () => {
-              if (flySound) {
-                flySound.currentTime = 0;
-                flySound.play().catch(() => {});
-              }
-            }
-          }, 
-          1.0
-        )
-        // Logo lands flat and rests
-        .to("#fly-logo", { z: 50, duration: 0.15 }, 1.25)
-        
-        // ⚡ MODIFIED TIMING: Gray hint emerges shortly AFTER the logo lands flat
-
-        
-        // Zoom past the viewport camera lens rapidly
-        .to("#fly-logo", {
-          opacity: 0,
-          scale: 12,
-          z: 800,
-          rotationX: -25,
-          rotationY: 15,
-          duration: 0.2,
-          ease: "power3.in",
-          onStart: () => {
-            if (boomSound) {
-              boomSound.currentTime = 0;
-              boomSound.play().catch(() => {});
-            }
-
-            // Scroll hint appears immediately with the boom.
-            gsap.to("#scroll-hint-gray", {
-              opacity: 1,
-              duration: 0.08,
-              ease: "power1.out"
-            });
-          }
-        }, 1.4)
-        .to("#phase-fly", { display: "none", duration: 0 }, 1.6);
-
-      // ── PHASE 4: MISSION STATEMENT TEXT REVEAL ──
-      tl.to("#mission-container", { opacity: 1, pointerEvents: "auto", duration: 0.1 }, 1.55)
-        
-        // Sequential line reveals
-        .to("#line-1", { opacity: 1, duration: 0.2 }, 1.65)
-        .to("#line-2", { opacity: 1, duration: 0.2 }, 1.75)
-        .to("#line-3", { opacity: 1, duration: 0.2 }, 1.85)
-
-        // Linear text gradient tracking effect
-        .to("#line-1", {
-          backgroundPosition: "100% 0%",
-          duration: 0.5,
-          ease: "none"
-        }, 1.85);
-
-      // Stagger highlight transitions across words in line elements
-      const highlightWords2 = document.querySelectorAll("#line-2 .word-highlight");
-      if (highlightWords2.length > 0) {
-        tl.to(highlightWords2, {
-          color: "#000000",
-          stagger: 0.04,
-          duration: 0.4,
-          ease: "power1.out"
-        }, 2.05);
-      }
-
-      const highlightWords3 = document.querySelectorAll("#line-3 .word-highlight");
-      if (highlightWords3.length > 0) {
-        tl.to(highlightWords3, {
-          color: "#000000",
-          stagger: 0.02,
-          duration: 0.5,
-          ease: "power1.out"
-        }, 2.45);
-      }
-
-      // Smoothly vanish the final scrolling guide indicator near the baseline
-      tl.to("#scroll-hint-gray", { opacity: 0, duration: 0.15 }, 2.85);
+      window.addEventListener('resize', ScrollTrigger.refresh);
     });
   </script>
 </body>
