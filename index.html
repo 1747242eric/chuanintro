@@ -30,7 +30,7 @@
     }
     #master-spacer { height: 3000vh; width: 100%; }
     #scroll-hint {
-      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
       z-index: 15;
       color: rgba(255,255,255,0.3);
       font-size: 0.8rem;
@@ -382,44 +382,58 @@ window.addEventListener('load', () => {
     }, startTime + decayStart);
   });
 
-  // ── 1b. SCROLL ICONS (timed — Eric 25718/25720) ──
-  master.set(scrollHint, { opacity: 1 }, 0);
-  master.to(scrollHint, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 2.8);
+  // ── 1b. SCROLL ICONS ──
+  // Opening hint (dead center) appears on LOAD — not scroll-activated.
+  gsap.set(scrollHint, { opacity: 0 });
+  gsap.to(scrollHint, { opacity: 1, duration: 0.8, ease: 'power1.out', delay: 0.3 });
   master.set(scrollHintGray, { opacity: 0 }, 0);
 
-  // ── 2. WHITE DOT (ORIGINAL TIMING) ──
-  master.set(phaseCircle, { opacity: 1 }, 3.0);
-  master.set(iris, { scale: 1, opacity: 1 }, 3.0);
-  master.to(iris, { scale: 250, duration: 0.8, ease: 'power2.inOut' }, 3.05);
-  master.set(phaseCircle, { opacity: 0 }, 4.8);
+  // Fade the opening hint out on the first real scroll (hello then starts).
+  let hintHidden = false;
+  function hideOpeningHint() {
+    if (hintHidden) return;
+    hintHidden = true;
+    gsap.to(scrollHint, { opacity: 0, duration: 0.4, ease: 'power1.in' });
+  }
+  document.addEventListener('scroll', hideOpeningHint, { passive: true });
 
-  // ── 3. LOGO (ORIGINAL ENTRANCE — NEW EXIT) ──
-  master.set(phaseFly, { opacity: 0, background: '#fff' }, 3.05); // movie begins as dot starts expanding
-  // ── The logo entrance is now THE MOVIE (see below): a locked, time-based
-  //    sequence from the white takeover to the logo parked. Master resumes at
-  //    the spin. Sounds live ONLY in the movie.
+  // ── 2. WHITE DOT — lives inside THE MOVIE (timed, dramatic takeover). ──
+  //    Master holds here; dot → white → logo → boom all play as one movie.
+
+  // ── 3. SPIN — timed, plays right after the boom (see movie onComplete). ──
   const postParkSpin = gsap.timeline({ paused: true });
-  postParkSpin.to(flyLogo, { rotationY: 810, duration: 0.45, ease: 'power3.out' }, 0);
-  postParkSpin.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 0.45);
-  postParkSpin.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 0.60);
+  postParkSpin.to(flyLogo, { rotationY: 1170, duration: 0.9, ease: 'power3.out' }, 0);
+  postParkSpin.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 0.9);
+  postParkSpin.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 1.05);
 
-  // ── 4. MISSION — appears as logo finishes ──
-  master.set(missionContainer, { opacity: 1, y: '0%' }, 5.49);
-  master.set(phaseFly, { opacity: 0 }, 5.49);
+  // ── 3b. BOTTOM SCROLL HINT — periodically fades in/out ("once in a while"). ──
+  const grayPulse = gsap.to(scrollHintGray, {
+    opacity: 1,
+    duration: 0.5,
+    ease: 'power1.inOut',
+    repeat: -1,
+    yoyo: true,
+    repeatDelay: 1.2,
+    paused: true
+  });
 
-  master.set('#line-2, #line-3', { y: '100%', opacity: 0 }, 5.49);
-  master.set('#line-1', { y: '750%', opacity: 0 }, 5.49);
+  // ── 4. MISSION — appears as logo finishes (shifted earlier: less scroll) ──
+  master.set(missionContainer, { opacity: 1, y: '0%' }, 4.59);
+  master.set(phaseFly, { opacity: 0 }, 4.59);
+
+  master.set('#line-2, #line-3', { y: '100%', opacity: 0 }, 4.59);
+  master.set('#line-1', { y: '750%', opacity: 0 }, 4.59);
 
   // Line 1 appears fast during rise — gradient begins at park
-  master.to('#line-1', { opacity: 1, duration: 0.35, ease: 'power1.out' }, 5.49);
-  master.to('#line-1', { y: '0%', duration: 1.0, ease: 'power2.out' }, 5.49);
-  master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.6, ease: 'power1.inOut' }, 6.34);
+  master.to('#line-1', { opacity: 1, duration: 0.35, ease: 'power1.out' }, 4.59);
+  master.to('#line-1', { y: '0%', duration: 1.0, ease: 'power2.out' }, 4.59);
+  master.to('#line-1', { backgroundPosition: '-100% 0%', duration: 0.6, ease: 'power1.inOut' }, 5.44);
 
   // Line 2 appears as last words of line 1 turn black
-  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 6.74);
-  master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 6.89);
+  master.to('#line-2', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, 5.84);
+  master.to(words2, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, 5.99);
 
-  const line2End = 8.15 + (words2.length * 0.06) + 0.15;
+  const line2End = 7.25 + (words2.length * 0.06) + 0.15;
   const line3Start = line2End + 0.1;
   master.to('#line-3', { y: '0%', opacity: 1, duration: 0.15, ease: 'power2.out' }, line3Start);
   master.to(words3, { color: '#000000', stagger: 0.06, duration: 0.15, ease: 'power1.inOut' }, line3Start + 0.15);
@@ -447,15 +461,25 @@ window.addEventListener('load', () => {
   // ─────────────────────────────────────────────────────────────
   const movie = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
 
-  movie.set(flyLogo, { opacity: 0, scale: 12, rotation: 0, filter: 'grayscale(0)', y: 1644 }, 0.05);
-  movie.call(() => { if (flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.6; flyAudio.play().catch(() => {}); } }, [], 0.1);
-  movie.call(() => { gsap.set(phaseFly, { opacity: 1 }); }, [], 0.1);
-  movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, 0.1);
-  movie.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 1.4, ease: 'power2.inOut' }, 0.15);
-  movie.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], 1.55);
-  movie.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], 1.55);
-  movie.set(flyLogo, { opacity: 1 }, 1.8);
-  movie.to(scrollHintGray, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.8);
+  // Phase A — white dot takes over the screen (dramatic, timed). ──
+  const DOT_DUR = 1.6; // time for the dot to fully cover the screen
+  movie.set(phaseCircle, { opacity: 1 }, 0);
+  movie.set(iris, { scale: 1, opacity: 1 }, 0);
+  movie.to(iris, { scale: 250, duration: DOT_DUR, ease: 'power2.inOut' }, 0);
+  movie.set(phaseFly, { opacity: 1 }, DOT_DUR);     // screen goes all white
+  movie.set(phaseCircle, { opacity: 0 }, DOT_DUR);  // dot gone, white remains
+
+  // Phase B — logo flies in AFTER the screen is white; boom lands with it. ──
+  const LAND = DOT_DUR;
+  movie.set(flyLogo, { opacity: 0, scale: 12, rotation: 0, filter: 'grayscale(0)', y: 1644 }, LAND);
+  movie.call(() => { if (flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.6; flyAudio.play().catch(() => {}); } }, [], LAND + 0.1);
+  movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, LAND + 0.1);
+  movie.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 1.4, ease: 'power2.inOut' }, LAND + 0.15);
+  const BOOM = LAND + 1.55;
+  movie.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], BOOM);
+  movie.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], BOOM);
+  movie.set(flyLogo, { opacity: 1 }, LAND + 1.8);
+  movie.call(() => { grayPulse.play(0); }, [], LAND + 1.8);
 
   const movieStart = 3.05;
   const movieStartFrac = movieStart / fadeStart;
@@ -465,6 +489,9 @@ window.addEventListener('load', () => {
   let movieDone = false;
   let lastScrollY = window.scrollY;
   let spinStarted = false;
+  let spinReady = false;
+  let spinStartY = 0;
+  const SPIN_SCROLL_GAP = Math.round(window.innerHeight * 1.5); // ~1.5 screens — happy medium (250px was too little, 4.4 screens too much)
 
   function playMovieForward() {
     if (movieState !== 'idle' || movieDone) return;
@@ -477,9 +504,15 @@ window.addEventListener('load', () => {
   function resetMovie() {
     movie.pause(0);
     postParkSpin.pause(0);
+    grayPulse.pause(0);
+    gsap.set(scrollHintGray, { opacity: 0 });
     spinStarted = false;
+    spinReady = false;
+    spinStartY = 0;
     movieState = 'idle';
     movieDone = false;
+    gsap.set(phaseCircle, { opacity: 0 });
+    gsap.set(iris, { scale: 1, opacity: 1 });
     gsap.set(phaseFly, { opacity: 0 });
     gsap.set(flyLogo, { opacity: 0, scale: 12, rotation: 0, rotationY: 0, filter: 'grayscale(0)', y: 1644 });
     if (flyAudio) { flyAudio.pause(); flyAudio.currentTime = 0; }
@@ -489,6 +522,9 @@ window.addEventListener('load', () => {
   movie.eventCallback('onComplete', () => {
     movieState = 'done';
     movieDone = true;
+    // Arm the spin — it fires after a couple of scrolls (not instantly).
+    spinReady = true;
+    spinStartY = window.scrollY;
   });
 
   master.eventCallback('onUpdate', () => {
@@ -502,20 +538,14 @@ window.addEventListener('load', () => {
       playMovieForward();
     }
 
-    // The user can keep scrolling. Once the movie has actually parked,
-    // the existing spin becomes available.
-    if (movieDone && down && !spinStarted && p >= 4.74 / fadeStart) {
-      spinStarted = true;
+    // The spin fires after a couple of scrolls past the boom.
+    if (spinReady && down && (window.scrollY - spinStartY) >= SPIN_SCROLL_GAP) {
+      spinReady = false;
       postParkSpin.play(0);
     }
 
-    // Reverse scroll: undo the post-park spin, then reset the movie
-    // (snap to end-of-bonjour) when the user reaches the movie boundary.
-    if (!down && spinStarted && p <= 4.74 / fadeStart) {
-      postParkSpin.reverse();
-      spinStarted = false;
-    }
-
+    // Reverse scroll: reset the movie (snap to end-of-bonjour) when the
+    // user reaches the movie boundary. The spin resets with it.
     if (!down && movieDone && p <= movieStartFrac) {
       resetMovie();
     }
