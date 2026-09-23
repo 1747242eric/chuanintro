@@ -383,7 +383,7 @@ window.addEventListener('load', () => {
   });
 
   // ── 1b. SCROLL ICONS (timed — Eric 25718/25720) ──
-  master.to(scrollHint, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.8);
+  master.set(scrollHint, { opacity: 1 }, 0);
   master.to(scrollHint, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 2.8);
   master.set(scrollHintGray, { opacity: 0 }, 0);
 
@@ -394,13 +394,14 @@ window.addEventListener('load', () => {
   master.set(phaseCircle, { opacity: 0 }, 4.8);
 
   // ── 3. LOGO (ORIGINAL ENTRANCE — NEW EXIT) ──
-  master.set(phaseFly, { opacity: 1, background: '#fff' }, 3.85); // white ready the moment the dot takes over (movie starts here)
+  master.set(phaseFly, { opacity: 0, background: '#fff' }, 3.05); // movie begins as dot starts expanding
   // ── The logo entrance is now THE MOVIE (see below): a locked, time-based
   //    sequence from the white takeover to the logo parked. Master resumes at
   //    the spin. Sounds live ONLY in the movie.
-  master.to(flyLogo, { rotationY: 810, duration: 0.45, ease: 'power3.out' }, 4.74);
-  master.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 5.19);
-  master.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 5.34);
+  const postParkSpin = gsap.timeline({ paused: true });
+  postParkSpin.to(flyLogo, { rotationY: 810, duration: 0.45, ease: 'power3.out' }, 0);
+  postParkSpin.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 0.45);
+  postParkSpin.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 0.60);
 
   // ── 4. MISSION — appears as logo finishes ──
   master.set(missionContainer, { opacity: 1, y: '0%' }, 5.49);
@@ -448,6 +449,7 @@ window.addEventListener('load', () => {
 
   movie.set(flyLogo, { opacity: 0, scale: 12, rotation: 0, filter: 'grayscale(0)', y: 1644 }, 0.05);
   movie.call(() => { if (flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.6; flyAudio.play().catch(() => {}); } }, [], 0.1);
+  movie.call(() => { gsap.set(phaseFly, { opacity: 1 }); }, [], 0.1);
   movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, 0.1);
   movie.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 1.4, ease: 'power2.inOut' }, 0.15);
   movie.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], 1.55);
@@ -455,23 +457,70 @@ window.addEventListener('load', () => {
   movie.set(flyLogo, { opacity: 1 }, 1.8);
   movie.to(scrollHintGray, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 1.8);
 
-  const irisEnd = 3.85;                       // iris wipe completes: white dot owns the screen
-  const irisFrac = irisEnd / fadeStart;       // its position as a fraction of the master timeline
-  let movieState = 'idle';                    // idle → playing → done (plays exactly once)
-  movie.eventCallback('onComplete', () => { movieState = 'done'; });
+  const movieStart = 3.05;
+  const movieStartFrac = movieStart / fadeStart;
 
-  // Fire + lock live on the TIMELINE, not on ScrollTrigger: a ScrollTrigger
-  // caches its onUpdate at construction, so swapping vars.onUpdate later is
-  // silently ignored. Timeline onUpdate + progress() are core GSAP — they run
-  // on every scrub tick, guaranteed.
+  // The movie is independent of scroll. Scroll only starts it.
+  let movieState = 'idle';
+  let movieDone = false;
+  let lastScrollY = window.scrollY;
+  let spinStarted = false;
+
+  function playMovieForward() {
+    if (movieState !== 'idle' || movieDone) return;
+    movieState = 'playing';
+    movie.play(0);
+  }
+
+  // Rewind never reverse-plays the movie. It snaps straight back to the
+  // end-of-bonjour state, so the next forward scroll restarts from the top.
+  function resetMovie() {
+    movie.pause(0);
+    postParkSpin.pause(0);
+    spinStarted = false;
+    movieState = 'idle';
+    movieDone = false;
+    gsap.set(phaseFly, { opacity: 0 });
+    gsap.set(flyLogo, { opacity: 0, scale: 12, rotation: 0, rotationY: 0, filter: 'grayscale(0)', y: 1644 });
+    if (flyAudio) { flyAudio.pause(); flyAudio.currentTime = 0; }
+    if (boomAudio) { boomAudio.pause(); boomAudio.currentTime = 0; }
+  }
+
+  movie.eventCallback('onComplete', () => {
+    movieState = 'done';
+    movieDone = true;
+  });
+
   master.eventCallback('onUpdate', () => {
-    if (movieState === 'idle' && master.progress() >= irisFrac) {
-      movieState = 'playing';
-      movie.play();
+    const y = window.scrollY;
+    const down = y >= lastScrollY;
+    const p = master.progress();
+
+    // Crossing the beginning of dot expansion starts the movie.
+    // After that, scrolling does NOT scrub or lock the movie.
+    if (down && movieState === 'idle' && p >= movieStartFrac) {
+      playMovieForward();
     }
-    if (movieState === 'playing' && master.progress() > irisFrac) {
-      master.progress(irisFrac);              // locked: cannot scrub past until the logo parks
+
+    // The user can keep scrolling. Once the movie has actually parked,
+    // the existing spin becomes available.
+    if (movieDone && down && !spinStarted && p >= 4.74 / fadeStart) {
+      spinStarted = true;
+      postParkSpin.play(0);
     }
+
+    // Reverse scroll: undo the post-park spin, then reset the movie
+    // (snap to end-of-bonjour) when the user reaches the movie boundary.
+    if (!down && spinStarted && p <= 4.74 / fadeStart) {
+      postParkSpin.reverse();
+      spinStarted = false;
+    }
+
+    if (!down && movieDone && p <= movieStartFrac) {
+      resetMovie();
+    }
+
+    lastScrollY = y;
   });
 
   window.addEventListener('resize', ScrollTrigger.refresh);
