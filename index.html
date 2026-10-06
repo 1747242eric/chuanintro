@@ -474,7 +474,7 @@ window.addEventListener('load', () => {
   movie.set(flyLogo, { opacity: 0, scale: 12, rotation: 0, filter: 'grayscale(0)', y: 1644 }, LAND);
   movie.call(() => { if (flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.6; flyAudio.play().catch(() => {}); } }, [], LAND - 0.5);
   movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, LAND + 0.1);
-  movie.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 1.4, ease: 'power2.inOut' }, LAND + 0.15);
+  movie.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 1.9, ease: 'power2.inOut' }, LAND + 0.15);
   const BOOM = LAND + 1.55;
   movie.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], BOOM);
   movie.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], BOOM);
