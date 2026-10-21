@@ -38,6 +38,7 @@
       text-transform: uppercase;
       pointer-events: none;
       opacity: 0;
+      transition: opacity 0.45s ease;
     }
     #scroll-hint span {
       display: block; margin: 10px auto 0;
@@ -63,7 +64,7 @@
     #scroll-hint-gray {
       position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
       z-index: 60;
-      color: rgba(0,0,0,0.3);
+      color: rgba(0,0,0,0.18);
       font-size: 0.8rem;
       letter-spacing: 0.3em;
       text-transform: uppercase;
@@ -73,7 +74,7 @@
     #scroll-hint-gray span {
       display: block; margin: 10px auto 0;
       width: 20px; height: 30px;
-      border: 2px solid rgba(0,0,0,0.25);
+      border: 1px solid rgba(0,0,0,0.18);
       border-radius: 10px;
       position: relative;
     }
@@ -82,9 +83,9 @@
       position: absolute; left: 50%;
       transform: translateX(-50%);
       width: 3px; height: 8px;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.22);
       border-radius: 2px;
-      animation: scrollDot 2s ease-in-out infinite;
+      opacity: 0.55;
     }
     @keyframes hintReappear {
       0% { opacity: 0; }
@@ -388,32 +389,34 @@ window.addEventListener('load', () => {
   gsap.to(scrollHint, { opacity: 1, duration: 0.8, ease: 'power1.out', delay: 0.3 });
   master.set(scrollHintGray, { opacity: 0 }, 0);
 
-  // Fade the opening hint out on the first real scroll (hello then starts).
-  let hintHidden = false;
-  function hideOpeningHint() {
-    if (hintHidden) return;
-    hintHidden = true;
-    gsap.to(scrollHint, { opacity: 0, duration: 0.4, ease: 'power1.in' });
+  // Opening hint is centered before the first scroll, then quietly disappears.
+  let openingHintDismissed = false;
+  function dismissOpeningHint() {
+    if (openingHintDismissed) return;
+    openingHintDismissed = true;
+    gsap.to(scrollHint, { opacity: 0, duration: 0.45, ease: 'power1.out', overwrite: true });
+    document.removeEventListener('scroll', dismissOpeningHint);
   }
-  document.addEventListener('scroll', hideOpeningHint, { passive: true });
+  document.addEventListener('scroll', dismissOpeningHint, { passive: true });
 
   // ── 2. WHITE DOT — lives inside THE MOVIE (timed, dramatic takeover). ──
   //    Master holds here; dot → white → logo → boom all play as one movie.
 
   // ── 3. SPIN — timed, plays right after the boom (see movie onComplete). ──
   const postParkSpin = gsap.timeline({ paused: true });
-  postParkSpin.to(flyLogo, { rotationY: 1170, duration: 0.9, ease: 'power3.out' }, 0);
-  postParkSpin.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 0.9);
-  postParkSpin.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 1.05);
+  // Slower, more deliberate spin: 3 full rotations over 3.6 seconds.
+  postParkSpin.to(flyLogo, { rotationY: 1080, duration: 3.6, ease: 'power2.out' }, 0);
+  postParkSpin.to(flyLogo, { scaleX: 0.001, opacity: 0.5, duration: 0.15, ease: 'power3.in' }, 3.6);
+  postParkSpin.to(flyLogo, { scaleY: 0, transformOrigin: 'bottom center', duration: 0.15, ease: 'power2.in' }, 3.75);
 
-  // ── 3b. BOTTOM SCROLL HINT — periodically fades in/out ("once in a while"). ──
+  // ── 3b. BOTTOM SCROLL HINT — subtle, occasional reminder after the movie. ──
   const grayPulse = gsap.to(scrollHintGray, {
-    opacity: 1,
-    duration: 0.5,
+    opacity: 0.18,
+    duration: 0.7,
     ease: 'power1.inOut',
     repeat: -1,
     yoyo: true,
-    repeatDelay: 1.2,
+    repeatDelay: 3.2,
     paused: true
   });
 
@@ -479,7 +482,6 @@ window.addEventListener('load', () => {
   movie.call(() => { if (flyAudio && !flyAudio.paused) { flyAudio.pause(); flyAudio.currentTime = 0; } }, [], BOOM);
   movie.call(() => { if (boomAudio) { boomAudio.currentTime = 0; boomAudio.volume = 0.6; boomAudio.play().catch(() => {}); } }, [], BOOM);
   movie.set(flyLogo, { opacity: 1 }, LAND + 1.8);
-  movie.call(() => { grayPulse.play(0); }, [], LAND + 1.8);
 
   const movieStart = 3.05;
   const movieStartFrac = movieStart / fadeStart;
@@ -522,6 +524,12 @@ window.addEventListener('load', () => {
   movie.eventCallback('onComplete', () => {
     movieState = 'done';
     movieDone = true;
+
+    // Start the subtle bottom-center SCROLL reminder; it fades in occasionally,
+    // then fades away so it doesn't compete with the logo or other animation.
+    gsap.set(scrollHintGray, { opacity: 0 });
+    grayPulse.play(0);
+
     // Arm the spin — it fires after a couple of scrolls (not instantly).
     spinReady = true;
     spinStartY = window.scrollY;
@@ -538,12 +546,6 @@ window.addEventListener('load', () => {
       playMovieForward();
     }
 
-    // The spin fires after a couple of scrolls past the boom.
-    if (spinReady && down && (window.scrollY - spinStartY) >= SPIN_SCROLL_GAP) {
-      spinReady = false;
-      postParkSpin.play(0);
-    }
-
     // Reverse scroll: reset the movie (snap to end-of-bonjour) when the
     // user reaches the movie boundary. The spin resets with it.
     if (!down && movieDone && p <= movieStartFrac) {
@@ -552,6 +554,15 @@ window.addEventListener('load', () => {
 
     lastScrollY = y;
   });
+
+  // Trigger the logo spin directly from scrolling, independent of master scrub updates.
+  window.addEventListener('scroll', () => {
+    if (spinReady && window.scrollY >= spinStartY + SPIN_SCROLL_GAP) {
+      spinReady = false;
+      spinStarted = true;
+      postParkSpin.play(0);
+    }
+  }, { passive: true });
 
   window.addEventListener('resize', ScrollTrigger.refresh);
   console.log('✅ Done');
