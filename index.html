@@ -538,16 +538,15 @@ window.addEventListener('load', () => {
       playMovieForward();
     }
 
-    // Spin follows scroll position: down spins forward, up reverses.
-if (spinReady) {
-  const spinProgress = gsap.utils.clamp(
-    0,
-    1,
-    (y - spinStartY) / SPIN_SCROLL_GAP
-  );
-  postParkSpin.progress(spinProgress);
-
-}
+    // Keep the movie and sound independent. After the movie ends, wait for
+    // SPIN_SCROLL_GAP of downward scrolling, then map further scroll distance
+    // directly to the existing spin timeline. Scrolling up reverses it; stopping freezes it.
+    if (spinReady && movieDone) {
+      const spinDistance = y - spinStartY - SPIN_SCROLL_GAP;
+      const spinProgress = gsap.utils.clamp(0, 1, spinDistance / SPIN_SCROLL_GAP);
+      postParkSpin.progress(spinProgress);
+      spinStarted = spinProgress > 0;
+    }
 
     // Reverse scroll: reset the movie (snap to end-of-bonjour) when the
     // user reaches the movie boundary. The spin resets with it.
