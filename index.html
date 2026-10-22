@@ -471,7 +471,7 @@ window.addEventListener('load', () => {
 
   // Phase B — logo flies in AFTER the screen is white; boom lands with it. ──
   const LAND = DOT_DUR;
-  movie.set(flyLogo, { opacity: 0, scale: 65, rotation: 0, filter: 'grayscale(0)', y: 6800 }, LAND);
+  movie.set(flyLogo, { opacity: 0, scale: 65, rotation: 0, filter: 'grayscale(0)', y: 4600 }, LAND);
   movie.call(() => { if (flyAudio) { flyAudio.currentTime = 0; flyAudio.volume = 0.6; flyAudio.play().catch(() => {}); } }, [], LAND - 0.75);
   movie.to(flyLogo, { opacity: 1, duration: 0.08, ease: 'power1.out' }, LAND + 0.1);
   movie.to(flyLogo, { scale: 0.8, rotation: 0, y: -35, duration: 2.1, ease: 'power2.inOut' }, LAND + 0.15);
@@ -514,7 +514,7 @@ window.addEventListener('load', () => {
     gsap.set(phaseCircle, { opacity: 0 });
     gsap.set(iris, { scale: 1, opacity: 1 });
     gsap.set(phaseFly, { opacity: 0 });
-    gsap.set(flyLogo, { opacity: 0, scale: 65, rotation: 0, rotationY: 0, filter: 'grayscale(0)', y: 6800 });
+    gsap.set(flyLogo, { opacity: 0, scale: 65, rotation: 0, rotationY: 0, filter: 'grayscale(0)', y: 4600 });
     if (flyAudio) { flyAudio.pause(); flyAudio.currentTime = 0; }
     if (boomAudio) { boomAudio.pause(); boomAudio.currentTime = 0; }
   }
